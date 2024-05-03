@@ -1,0 +1,294 @@
+{
+  "name": "Reach and Demographic reporting",
+  "fact_tables": [
+    {
+      "fact_table": "Event"
+    },
+    {
+      "fact_table": "PopulationData",
+      "ephemeral_dimensions": [
+        "Campaign",
+        "Device",
+        "DeviceAndCrossDevice",
+        "EventDate",
+        "CumulativeDate"
+      ]
+    },
+    {
+      "fact_table": "PopulationTile",
+      "consolidation": {
+        "consolidated_fact_table": "PopulationData",
+        "consolidated_dimensions": [
+          {
+            "name": "population",
+            "dimension": "Population()"
+          },
+          {
+            "name": "reach",
+            "dimension": "Zero()"
+          }
+        ]
+      }
+    },
+    {
+      "fact_table": "ReachTile",
+      "consolidation": {
+        "consolidated_fact_table": "Event",
+        "consolidated_dimensions": [
+          {
+            "name": "population",
+            "dimension": "Zero()"
+          },
+          {
+            "name": "reach",
+            "dimension": "Reach()"
+          }
+        ]
+      }
+    },
+    {
+      "fact_table": "ReachAndPopulation",
+      "union": {
+        "fact_tables": [
+          "PopulationTile",
+          "ReachTile"
+        ]
+      }
+    }
+  ],
+  "default_fact_table": "Event",
+  "measures": [
+    {
+      "aggregating_function": {
+        "predicate_name": "Reach"
+      },
+      "description": "When asked for reach use EventDate dimension, when asked for cumulative reach, use Reach with CumulativeDate dimension."
+    },
+    {
+      "aggregating_function": {
+        "predicate_name": "ReachedFraction"
+      },
+      "fact_table": "ReachAndPopulation",
+      "description": "Frction of population reached."
+    },
+    {
+      "aggregating_function": {
+        "predicate_name": "Impressions"
+      }
+    },
+    {
+      "aggregating_function": {
+        "predicate_name": "Population"
+      },
+      "fact_table": "PopulationData"
+    }
+  ],
+  "dimensions": [
+    {
+      "function": {
+        "predicate_name": "Campaign"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "Device"
+      },
+      "description": "When listing dimensions Device by default should be listed after EventDate or CumulativeDate."
+    },
+    {
+      "function": {
+        "predicate_name": "DeviceAndCrossDevice"
+      },
+      "description": "Use this dimension when user wants to see device break down and cross device measures on one chart."
+    },
+    {
+      "function": {
+        "predicate_name": "Age"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "Demo"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "Gender"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "CumulativeDate",
+        "parameters": [
+          {
+            "field_name": "end_date"
+          }
+        ]
+      },
+      "description": "End date needs to be specified equal to end of the date range. For example if end date is 2023-01-01 then call as CumulativeDate(end_date: \"2023-01-01\"). Note that this is a dimension, NOT a filter."
+    },
+    {
+      "function": {
+        "predicate_name": "EventDate"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "Total",
+        "description": "Use this if you do not need any dimensions."
+      }
+    }
+  ],
+  "filters": [
+    {
+      "predicate": {
+        "predicate_name": "DeviceIn",
+        "parameters": [
+          {
+            "field_name": "devices"
+          }
+        ]
+      },
+      "depends_on_dimensions": [
+        "Device"
+      ]
+    },
+    {
+      "predicate": {
+        "predicate_name": "DemoIn",
+        "parameters": [
+          {
+            "field_name": "demos"
+          }
+        ]
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "AgeIn",
+        "parameters": [
+          {
+            "field_name": "ages"
+          }
+        ]
+      },
+      "description": "Available demo buckets are 18-24, 25-34, 35-44, 45-54, 55-64, 65+. List them to assemble the needed consraint."
+    },
+    {
+      "predicate": {
+        "predicate_name": "GenderIn",
+        "parameters": [
+          {
+            "field_name": "genders"
+          }
+        ]
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "CampaignIn",
+        "parameters": [
+          {
+            "field_name": "campaigns"
+          }
+        ]
+      },
+      "depends_on_dimensions": [
+        "Campaign"
+      ]
+    },
+    {
+      "predicate": {
+        "predicate_name": "DateRange",
+        "parameters": [
+          {
+            "field_name": "date_from"
+          },
+          {
+            "field_name": "date_to"
+          }
+        ],
+        "depends_on_dimensions": [
+          "EventDate"
+        ]
+      },
+      "description": "Dates are in YYYY-MM-DD format.",
+      "depends_on_dimensions": [
+        "EventDate"
+      ]
+    }
+  ],
+  "chart_types": [
+    {
+      "predicate": {
+        "predicate_name": "PieChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "LineChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "BarChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "StackedBarChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "Table",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "TotalsCard",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "VennDiagram",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "GeoMap",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "QueryOnly",
+        "parameters": []
+      }
+    }
+  ],
+  "example_question": "Reach over time please.",
+  "logica_program": "examples/reach/reach.l",
+  "tagline": "Reach and Demographic reporting",
+  "dashboard": {},
+  "suffix_lines": [
+    "Request: Cumulative reach for July 2024 please. Show it for each device.",
+    "Response: { \"title\": \"Cumulative reach for each device in July 2024.\", \"measures\": [  \"Reach()\" ], \"dimensions\": [ \"CumulativeDate(end_date: \\\"2024-07-31\\\")\",  \"Device()\" ], \"filters\": [  \"DateRange(date_from: \\\"2024-07-01\\\", date_to: \\\"2024-07-31\\\")\" ], \"chartType\": \"LineChart()\", \"order\": [  \"CumulativeDate(end_date: \\\"2024-07-31\\\")\" ], \"limit\": -1,",
+    "",
+    "Request: Reach of males in August 2024.",
+    "Response: {\"title\": \"Reach of 18-24 males over time in August 2024\", \"measures\": [\"Reach()\"], \"dimensions\": [\"EventDate()\"], \"filters\": [\"DateRange(date_from: \\\"2024-08-01\\\", date_to: \\\"2024-08-31\\\")\", \"GenderIn(genders: [\\\"male\\\"])\", \"AgeIn(ages: [\\\"18-24\\\"])\"], \"chartType\": \"LineChart()\", \"order\": [\"EventDate() asc\"], \"limit\": -1}",
+    "",
+    "Request: Impressions over time broken by age as stacked barchart.",
+    "Response: {\"title\": \"Impressions over time broken by age\", \"measures\": [\"Impressions()\"], \"dimensions\": [\"EventDate()\", \"Age()\"], \"filters\": [\"DateRange(date_from: \\\"2024-01-01\\\", date_to: \\\"2024-12-31\\\")\"], \"order\": [\"EventDate() asc\"], \"limit\": -1, \"chartType\": \"StackedBarChart()\"}",
+    "",
+    "Request: Top 3 campaigns by impressions.",
+    "Response: {\"title\": \"Top 3 campaigns by impressions\", \"measures\": [\"Impressions()\"], \"dimensions\": [\"Campaign()\"], \"filters\": [], \"order\": [\"Impressions() desc\"], \"limit\": 3, \"chartType\": \"BarChart()\"}"
+  ]
+}

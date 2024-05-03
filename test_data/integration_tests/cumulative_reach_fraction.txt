@@ -1,0 +1,56 @@
+{
+  "config": "examples/reach/reach.json",
+  "command": "logic_program",
+  "request": {
+    "title": "Cumulative reached fraction for July 2024.",
+    "measures": [
+      "ReachedFraction()"
+    ],
+    "dimensions": [
+      "CumulativeDate(end_date: \"2024-07-31\")"
+    ],
+    "filters": [
+      "DateRange(date_from: \"2024-07-01\", date_to: \"2024-07-31\")"
+    ],
+    "chartType": "LineChart()",
+    "order": [
+      "CumulativeDate(end_date: \"2024-07-31\") asc"
+    ],
+    "limit": -1,
+    "exampleQuery": "Cumuative reached fraction for July 2024, please."
+  },
+  "comment": "This is a flawed program, resulting in error because PopulationDate has no date. Need to upgrade LogicLM to make this work."
+}
+-----
+# Computing all the measures.
+ConsolidatingReachAndPopulation(reachedfraction_309073? Aggr= ReachedFraction(fact), cumulativedate_631405: fact.cumulativedate_631405) distinct :- 
+  ReachAndPopulation(fact);
+
+ReachAndPopulation(fact) :- 
+  (PopulationTile(fact)) |
+  (ReachTile(fact));
+
+PopulationTileStep1(population? Aggr= Population(fact), reach? Aggr= Zero(fact)) distinct :- 
+  PopulationData(fact);
+
+PopulationTile({cumulativedate_631405: cumulativedate_631405, population: population, reach: reach}) :- 
+  PopulationTileStep1(population:, reach:),
+  DimensionsDomain(cumulativedate_631405:);
+
+ReachTileStep1(population? Aggr= Zero(fact), reach? Aggr= Reach(fact), cumulativedate_631405: CumulativeDate(fact, end_date: "2024-07-31")) distinct :- 
+  Event(fact),
+  DateRange(fact, date_from: "2024-07-01", date_to: "2024-07-31");
+
+ReachTile({cumulativedate_631405: cumulativedate_631405, population: population, reach: reach}) :- 
+  ReachTileStep1(population:, reach:, cumulativedate_631405:),
+  DimensionsDomain(cumulativedate_631405:);
+
+DimensionsDomain(cumulativedate_631405: CumulativeDate(fact, end_date: "2024-07-31")) distinct :- 
+  DateRange(fact, date_from: "2024-07-01", date_to: "2024-07-31"),
+  Event(fact);
+
+@OrderBy("Report", "`CumulativeDate<end_date: '2024-07-31'>` asc");
+
+# Assembling all the measures.
+Report(`CumulativeDate<end_date: '2024-07-31'>`: cumulativedate_631405, `ReachedFraction<>`: reachedfraction_309073) :- 
+  ConsolidatingReachAndPopulation(reachedfraction_309073:, cumulativedate_631405:)

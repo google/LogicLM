@@ -1,0 +1,55 @@
+{
+  "config": "examples/reach/reach.json",
+  "command": "show_prompt"
+}
+-----
+Please write configuration for an OLAP request.
+Available measures are:
+* Reach(): When asked for reach use EventDate dimension, when asked for cumulative reach, use Reach with CumulativeDate dimension.
+* ReachedFraction(): Frction of population reached.
+* Impressions()
+* Population()
+
+Available dimensions are:
+* Campaign()
+* Device(): When listing dimensions Device by default should be listed after EventDate or CumulativeDate.
+* DeviceAndCrossDevice(): Use this dimension when user wants to see device break down and cross device measures on one chart.
+* Age()
+* Demo()
+* Gender()
+* CumulativeDate(end_date:): End date needs to be specified equal to end of the date range. For example if end date is 2023-01-01 then call as CumulativeDate(end_date: "2023-01-01"). Note that this is a dimension, NOT a filter.
+* EventDate()
+* Total()
+
+Available filters are:
+* DeviceIn(devices:)
+* DemoIn(demos:)
+* AgeIn(ages:): Available demo buckets are 18-24, 25-34, 35-44, 45-54, 55-64, 65+. List them to assemble the needed consraint.
+* GenderIn(genders:)
+* CampaignIn(campaigns:)
+* DateRange(date_from:, date_to:): Dates are in YYYY-MM-DD format.
+* PieChart()
+* LineChart()
+* BarChart()
+* StackedBarChart()
+* Table()
+* TotalsCard()
+* VennDiagram()
+* GeoMap()
+* QueryOnly()
+Config is JSON object with fields title, measures, dimensions, filters, order, limit and chartType.
+Always use all the fields. For example if you do not have filters, then pass it as empty list.
+
+Request: Cumulative reach for July 2024 please. Show it for each device.
+Response: { "title": "Cumulative reach for each device in July 2024.", "measures": [  "Reach()" ], "dimensions": [ "CumulativeDate(end_date: \"2024-07-31\")",  "Device()" ], "filters": [  "DateRange(date_from: \"2024-07-01\", date_to: \"2024-07-31\")" ], "chartType": "LineChart()", "order": [  "CumulativeDate(end_date: \"2024-07-31\")" ], "limit": -1,
+
+Request: Reach of males in August 2024.
+Response: {"title": "Reach of 18-24 males over time in August 2024", "measures": ["Reach()"], "dimensions": ["EventDate()"], "filters": ["DateRange(date_from: \"2024-08-01\", date_to: \"2024-08-31\")", "GenderIn(genders: [\"male\"])", "AgeIn(ages: [\"18-24\"])"], "chartType": "LineChart()", "order": ["EventDate() asc"], "limit": -1}
+
+Request: Impressions over time broken by age as stacked barchart.
+Response: {"title": "Impressions over time broken by age", "measures": ["Impressions()"], "dimensions": ["EventDate()", "Age()"], "filters": ["DateRange(date_from: \"2024-01-01\", date_to: \"2024-12-31\")"], "order": ["EventDate() asc"], "limit": -1, "chartType": "StackedBarChart()"}
+
+Request: Top 3 campaigns by impressions.
+Response: {"title": "Top 3 campaigns by impressions", "measures": ["Impressions()"], "dimensions": ["Campaign()"], "filters": [], "order": ["Impressions() desc"], "limit": 3, "chartType": "BarChart()"}
+
+Write me JSON for this request: __USER_REQUEST__

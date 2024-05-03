@@ -1,0 +1,180 @@
+{
+  "name": "USA baby names",
+  "fact_tables": [
+    {
+      "fact_table": "BabyNames"
+    }
+  ],
+  "default_fact_table": "BabyNames",
+  "measures": [
+    {
+      "aggregating_function": {
+        "predicate_name": "NumberOfBabies"
+      }
+    },
+    {
+      "aggregating_function": {
+        "predicate_name": "NameFraction",
+        "parameters": [
+          {
+            "field_name": "name"
+          }
+        ]
+      }
+    }
+  ],
+  "dimensions": [
+    {
+      "function": {
+        "predicate_name": "Name"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "State"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "Year"
+      }
+    },
+    {
+      "function": {
+        "predicate_name": "CumulativeYear",
+        "parameters": [
+          {
+            "field_name": "to_year"
+          }
+        ]
+      }
+    }
+  ],
+  "filters": [
+    {
+      "predicate": {
+        "predicate_name": "StateIn",
+        "parameters": [
+          {
+            "field_name": "states"
+          }
+        ]
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "NameIn",
+        "parameters": [
+          {
+            "field_name": "names"
+          }
+        ]
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "YearIn",
+        "parameters": [
+          {
+            "field_name": "years"
+          }
+        ]
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "YearRange",
+        "parameters": [
+          {
+            "field_name": "from_year"
+          },
+          {
+            "field_name": "to_year"
+          }
+        ]
+      }
+    }
+  ],
+  "example_question": "Kindly plot the number of babies born over years.",
+  "logica_program": "examples/baby_names/baby_names.l",
+  "dashboard": {},
+  "chart_types": [
+    {
+      "predicate": {
+        "predicate_name": "PieChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "LineChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "BarChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "StackedBarChart",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "Table",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "TotalsCard",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "VennDiagram",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "GeoMap",
+        "parameters": []
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "QueryOnly",
+        "parameters": []
+      }
+    }
+  ],
+  "suffix_lines": [
+    "",
+    "Example request: Number of babies over years in Washington.",
+    "Example response: { \"title\": \"Babies over time in Washington state.\", \"measures\": [\"NumberOfBabies()\"], \"dimensions\": [\"Year()\"], \"filters\": [\"StateIn(states: [\\\"WA\\\"])\"], \"chartType\": \"LineChart()\", \"order\": [\"Year()\"], \"limit\": -1}",
+    "",
+    "Example request: Top 3 popular names in Washington.",
+    "Example response: {\"title\": \"Top 3 Popular Baby Names in Washington.\", \"measures\": [\"NumberOfBabies()\"], \"dimensions\": [\"Name()\"], \"filters\": [\"StateIn(states: [\\\"WA\\\"])\"], \"chartType\": \"BarChart()\", \"order\": [\"NumberOfBabies() desc\"], \"limit\": 3}",
+    "",
+    "Example request: Number of babies by state as a map.",
+    "Example response: {\"title\": \"Number of babies by state.\", \"measures\": [\"NumberOfBabies()\"], \"dimensions\": [\"State()\"], \"filters\": [], \"chartType\": \"GeoMap(region: \\\"US\\\", resolution: \\\"provinces\\\")\", \"order\": [\"NumberOfBabies() desc\"], \"limit\": -1}",
+    "",
+    "Example request: Fraction of Arnolds by state.",
+    "Example response: {\"title\": \"Fraction of Arnolds by state.\", \"measures\": [\"NameFraction(name: \\\"Arnold\\\")\"], \"dimensions\": [\"State()\"], \"filters\": [], \"chartType\": \"BarChart()\", \"order\": [\"State()\"], \"limit\": -1}",
+    "",
+    "Example request: Cumulative number of babies for 1990 to 2000.",
+    "Example response: { \"title\": \"Cumulative number of babies for 1990 to 2000.\", \"measures\": [\"NumberOfBabies()\"], \"dimensions\": [\"CumulativeYear(to_year: 2000)\"], \"filters\": [\"YearRange(from_year: 1990, to_year: 2000)\"], \"chartType\": \"LineChart()\", \"order\": [\"CumulativeYear(to_year: 2000)\"], \"limit\": -1}",
+    "",
+    "Example request: Number of babies named Robert born over years.",
+    "Example response: {\"title\": \"Number of babies named Robert born over years.\", \"measures\": [\"NumberOfBabies()\"], \"dimensions\": [\"Year()\"], \"filters\": [\"NameIn(names: [\\\"Robert\\\"])\"], \"chartType\": \"LineChart()\", \"order\": [\"Year()\"], \"limit\": -1, \"exampleQuery\": \"Number of babies named Robert born over years.\"}",
+    "",
+    "Example request: Cumulative number of Roberts in range of years from 1960 to 2020.",
+    "Example response: {\"title\": \"Accumulation of Roberts from 1960 to 2020.\", \"measures\": [\"NumberOfBabies()\"], \"dimensions\": [\"CumulativeYear(to_year: 2020)\"], \"filters\": [\"YearRange(from_year: 1960, to_year: 2020)\", \"NameIn(names: [\\\"Robert\\\"])\"], \"chartType\": \"LineChart()\", \"order\": [\"CumulativeYear(to_year: 2020)\"], \"limit\": -1}"
+  ]
+}

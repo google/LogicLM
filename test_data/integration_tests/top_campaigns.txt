@@ -1,0 +1,34 @@
+{
+  "config": "examples/reach/reach.json",
+  "command": "logic_program",
+  "request": {
+    "title": "Top 3 campaigns by impressions in 2024",
+    "measures": [
+      "Impressions()"
+    ],
+    "dimensions": [
+      "Campaign()"
+    ],
+    "filters": [
+      "DateRange(date_from: \"2024-01-01\", date_to: \"2024-12-31\")"
+    ],
+    "order": [
+      "Impressions() desc"
+    ],
+    "limit": 3,
+    "chartType": "BarChart()"
+  }
+}
+-----
+# Computing all the measures.
+ConsolidatingEvent(impressions_216848? Aggr= Impressions(fact), campaign_528107: Campaign(fact)) distinct :- 
+  Event(fact),
+  DateRange(fact, date_from: "2024-01-01", date_to: "2024-12-31");
+
+@Limit("Report", 3);
+
+@OrderBy("Report", "`Impressions<>` desc");
+
+# Assembling all the measures.
+Report(`Campaign<>`: campaign_528107, `Impressions<>`: impressions_216848) :- 
+  ConsolidatingEvent(impressions_216848:, campaign_528107:)

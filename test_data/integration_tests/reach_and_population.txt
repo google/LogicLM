@@ -1,0 +1,26 @@
+{
+  "config": "examples/reach/reach.json",
+  "command": "logic_program",
+  "request": {
+    "measures": [
+      "Reach()",
+      "Population()"
+    ],
+    "dimensions": [
+      "Age()"
+    ],
+    "filters": []
+  }
+}
+-----
+# Computing all the measures.
+ConsolidatingEvent(reach_299895? Aggr= Reach(fact), age_778101: Age(fact)) distinct :- 
+  Event(fact);
+
+ConsolidatingPopulationData(population_646153? Aggr= Population(fact), age_778101: Age(fact)) distinct :- 
+  PopulationData(fact);
+
+# Assembling all the measures.
+Report(`Age<>`: age_778101, `Reach<>`: reach_299895, `Population<>`: population_646153) :- 
+  ConsolidatingEvent(reach_299895:, age_778101:),
+  ConsolidatingPopulationData(population_646153:, age_778101:)

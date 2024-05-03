@@ -1,0 +1,2628 @@
+<!--
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>LogicLM</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script>
+  const PageOption = {
+    Inquiry: 'inquiry',
+    Dashboard: 'dashboard'
+  }
+  // Setting initial dataFrame. This value will also always hold the dataframe
+  // related to the latest inquiry mode chart.
+  var inquiryDataFrame = [["Device","Impressions"],
+                          ["ctv",1],
+                          ["desktop",1],
+                          ["mobile",1]];
+  var inquiryDataFrameTitle = 'Welcome! Please enter your request, or edit it on the left.';
+  var chartType = 'TextMessage';
+  var chartArguments = {};
+
+
+  // Loading Google JS charts and defining rendering function.
+  google.charts.load('current', {
+    'packages':['geochart', 'corechart', 'table'],
+  });
+  google.charts.setOnLoadCallback(() => renderDataframe('inquiry_report_dataframe_div', inquiryDataFrame, inquiryDataFrameTitle, 1000, 620, PageOption.Inquiry, currentConfig));
+
+  function renderDataframe(chartContainerId, dataFrame, dataFrameTitle, width, height, pageVersion, config) {
+    let pivoted = false;
+    if (config.dimensions.length > 1 && chartType != 'Table') {
+      pivoted = true;
+      plottableDataFrame = pivotDataFrameSplittingMeasures(
+        dataFrame,
+        config.dimensions.length,
+        config.measures.length);
+    } else {
+      plottableDataFrame = dataFrame;
+    }
+
+    var dataFrameVizOptions = {title: dataFrameTitle, orientation: 'horizontal'};
+    var series = {};
+    var vAxes = {};
+    var numColumns = plottableDataFrame[0].length;
+    let axisTitle = {0: [], 1:[]};
+    for(var i = 1;i < numColumns; i++) {
+
+      var targetAxis = 0;
+      if (i > 1 && numColumns > 2 && !pivoted) {
+        targetAxis = 1;
+      }
+      series[i - 1] = {targetAxisIndex: targetAxis};
+      axisTitle[targetAxis].push(plottableDataFrame[0][i]);
+
+    }
+    if (pivoted && config.measures.length == 1) {
+      axisTitle = {0: [dataFrame[0][config.dimensions.length]], 1:[]};
+    }
+    let gridlinesCount = null;
+    if (axisTitle[1].length > 0) {
+      gridlinesCount = 1;
+    }
+    vAxes[0] = {title: axisTitle[0].join(', '), gridlines: {count: gridlinesCount}};
+    if (axisTitle[1].length > 0) {
+      vAxes[1] = {title: axisTitle[1].join(', '), gridlines: {count: gridlinesCount}};
+    }
+
+    dataFrameVizOptions.series = series;
+    dataFrameVizOptions.vAxes = vAxes;
+    dataFrameVizOptions.hAxis = {title: dataFrame[0][0]};
+    dataFrameVizOptions.width = width;
+    dataFrameVizOptions.height = height;
+    dataFrameVizOptions.cssClassNames = {tableCell: 'insightful_table_cell', headerCell: 'font20'};
+
+    zzz = dataFrameVizOptions;
+
+    var chart = null;
+    var tehDiv = document.createElement('div');
+    var containerDiv = document.getElementById(chartContainerId);
+    if (pageVersion === PageOption.Inquiry) {
+      containerDiv.innerHTML = '';
+      containerDiv.appendChild(tehDiv);
+    } else {
+      containerDiv.innerHTML = '';
+      containerDiv.appendChild(tehDiv);
+      containerDiv.setAttribute('dataframe', JSON.stringify(dataFrame));
+    }
+
+    if (dataFrame.length < 2) {
+      tehDiv.innerHTML = (
+        '<div class="infocard"><p class="infocard_paragraph">' +
+        'It looks like no events and/or facts matched your query. ' +
+        'See config on the left for how I understood of your request. ' +
+        'Try relaxing, or removing constraints.' +
+        letUsKnow +
+        '</p></div>');
+      return;
+    }
+    let exportDataButtonBar = document.getElementById('export_data_button_bar');
+
+    if (chartType == 'PieChart') {
+      chart = new google.visualization.PieChart(tehDiv);
+    } else if (chartType == 'LineChart') {
+      chart = new google.visualization.LineChart(tehDiv);
+    } else if (chartType == 'BarChart') {
+      chart = new google.visualization.BarChart(tehDiv);
+    } else if (chartType == 'StackedBarChart') {
+      dataFrameVizOptions.isStacked = true;
+      chart = new google.visualization.BarChart(tehDiv);
+    } else if (chartType == 'Table' || chartType == 'TotalsCard' || chartType == 'VennDiagram') {
+      chart = new google.visualization.Table(tehDiv);
+    } else if (chartType == 'GeoMap') {
+      chart = new google.visualization.GeoChart(tehDiv);
+      dataFrameVizOptions.colorAxis = {colors: ['#eeffee', '#00bb00']};
+      dataFrameVizOptions.region = chartArguments.region;
+      dataFrameVizOptions.resolution = chartArguments.resolution;
+    } else if (chartType == 'QueryOnly') {
+      tehDiv.innerHTML = `
+      <div style="display:flex;flex-flow:row;">
+      <div class="button" id="copy_sql_button" onclick="copySqlToClipboard()" style="width:150px">Copy SQL</div>
+      </div>
+      <div class="sql_screen">
+        <pre id="the_sql">${querySql}</pre>
+      </div>`;
+      if (exportDataButtonBar) {
+        exportDataButtonBar.classList.add('hidden');
+      }
+      return;
+    } else if (chartType == 'TextMessage') {
+      tehDiv.innerHTML = `<div class="sql_screen">${dataFrameTitle}</div>`
+    }
+    try {
+      chart.draw(google.visualization.arrayToDataTable(plottableDataFrame), dataFrameVizOptions);
+    } catch {
+      throw new Error('Cannot draw the chart (likely due to a malformed chart name)')
+    }
+    if (exportDataButtonBar) {
+      exportDataButtonBar.classList.remove('hidden');
+    }
+
+    addHandlerToTableCells();
+  }
+
+  function pivotDataFrameCombiningDimensions(dataFrame, numDim, numMeasures) {
+    return dataFrame.map(x => {
+      let newDim = x.slice(0, numDim).map(e => e.toString()).join('-');
+      let newX = [newDim].concat(x.slice(numDim, numDim + numMeasures));
+      return newX;
+    });
+  }
+
+  function pivotDataFrameSplittingMeasures(dataFrame, numDim, numMeasures) {
+    let x = dataFrame[0];
+    let breakingDimMetaName = x.slice(1, numDim - 1).map(e => e.toString()).join('-');
+    let measureNames = x.slice(numDim, numDim + numMeasures)
+    let sparseData = {};
+    dataFrame.slice(1, dataFrame.length).forEach(x => {
+      sparseData[x[0]] = {};
+    });
+    let breakingDimsSet = {}
+    dataFrame.slice(1, dataFrame.length).forEach(x => {
+      let breakingDim = x.slice(1, numDim).map(e => e.toString()).join('-');
+      breakingDimsSet[breakingDim] = true;
+      // console.log(sparseData, x, x[0]);
+      sparseData[x[0]][breakingDim] = x.slice(numDim, numDim + numMeasures);
+    });
+    let breakingDims = Object.keys(breakingDimsSet).sort();
+    let mainDims = Object.keys(sparseData);
+
+    let data = mainDims.map(x => {
+      let dim = x;
+      let measures = breakingDims.map(d => (sparseData[x][d] || Array(numMeasures).fill(0)));
+      return [dim].concat(measures.flat());
+    });
+    let brokenMeasures = null;
+    if (numMeasures > 1) {
+      brokenMeasures = measureNames.map(m => {
+        return breakingDims.map(d => m + "-" + d);
+      }).flat();
+    } else {
+      brokenMeasures = breakingDims;
+    }
+    let header = [dataFrame[0][0]].concat(brokenMeasures);
+    console.log('header', header);
+    console.log('breakingDimsSet', breakingDimsSet);
+    return [header].concat(data);
+  }
+
+  function copySqlToClipboard() {
+    let sql = document.getElementById('the_sql').textContent;
+    navigator.clipboard.writeText(sql);
+    let button = document.getElementById('copy_sql_button');
+    let old_text = button.innerText;
+    button.innerText = 'SQL COPIED!';
+    setTimeout(() => {
+      button.innerText = old_text;
+    }, 1000);
+    
+  }
+
+  function addHandlerToTableCells() {
+    let tableCells = document.querySelectorAll('.insightful_table_cell');
+    let userCommand = document.getElementById('inquiry_user_command');
+    tableCells.forEach((cell) => {
+        cell.onclick = (event) => {
+        userCommand.textContent = userCommand.textContent + ' ' + cell.textContent;
+      };
+    });
+  }
+
+  let currentConfig = {"title": "Device breakdown in France", "dimensions": ["DateDimension()"], "measures": ["Reach()", "Impressions()"], "filters": ["CountryIn(countries: [\"FR\"])"], "chartType": "TextMessage()", "order": ["DateDimension()"], "limit": -1, "report_description": "France impressions broken by device as a piechart."};
+  // < - intelligence config cut out line. do not modify. - >
+  let intelligenceConfig = {
+    "aiDataRequest": {
+      "dimensions": [
+        {
+          "functionName": "Campaign"
+        },
+        {
+          "functionName": "Device"
+        },
+        {
+          "functionName": "DeviceAndCrossDevice"
+        },
+        {
+          "functionName": "Age"
+        },
+        {
+          "functionName": "Demo"
+        },
+        {
+          "functionName": "Gender"
+        },
+        {
+          "functionName": "CumulativeDate"
+        },
+        {
+          "functionName": "EventDate"
+        }
+      ],
+      "measures": [
+        {
+          "aggregatingFunctionName": "Reach"
+        },
+        {
+          "aggregatingFunctionName": "ReachedFraction"
+        },
+        {
+          "aggregatingFunctionName": "Impressions"
+        },
+        {
+          "aggregatingFunctionName": "Population"
+        }
+      ],
+      "filters": [
+        {
+          "predicateName": "DeviceIn"
+        },
+        {
+          "predicateName": "DemoIn"
+        },
+        {
+          "predicateName": "AgeIn"
+        },
+        {
+          "predicateName": "GenderIn"
+        },
+        {
+          "predicateName": "CampaignIn"
+        },
+        {
+          "predicateName": "DateRange"
+        }
+      ]
+    },
+    "dashboard": true,
+    "aiVisualizationRequest": {
+      "chartTypes": [
+        {
+          "chartTypeName": "PieChart"
+        },
+        {
+          "chartTypeName": "LineChart"
+        },
+        {
+          "chartTypeName": "BarChart"
+        },
+        {
+          "chartTypeName": "StackedBarChart"
+        },
+        {
+          "chartTypeName": "Table"
+        },
+        {
+          "chartTypeName": "TotalsCard"
+        },
+        {
+          "chartTypeName": "VennDiagram"
+        },
+        {
+          "chartTypeName": "GeoMap"
+        },
+        {
+          "chartTypeName": "QueryOnly"
+        }
+      ]
+    }
+  };
+
+  // < - intelligence config cut out line. do not modify. - >
+
+  function understandCommand() {
+    let commandPageVersion = currentPageVersion;
+    let textBoxId = commandPageVersion + "_user_command";
+    let configDisplayId = commandPageVersion + "_config_display";
+    let textBox = document.getElementById(textBoxId);
+    // let command = textBox.value;
+    let command = textBox.textContent;
+    let configDisplay = document.getElementById(configDisplayId);
+    displayComprehensionMessage(commandPageVersion);
+    //configDisplay.innerHTML = workingOnReportHtml();
+
+    return fetch('/understand_command?page=' + commandPageVersion + '&config=' + getIntelligenceConfigPath(),
+                 {method: 'POST', body: command})
+      .then(response => {
+        console.log('Response:');
+        console.log(response);
+        return response.json()
+      })
+      .then(config => {
+        console.log('Config:');
+        console.log(config);
+        if (config['ai_error_message'] !== undefined) {
+          let aiError = new Error(config['ai_error_message']);
+          aiError.this_is_ai_error = true;
+          throw aiError;
+        }
+
+        // configDisplay.innerHTML = decodeURIComponent(
+        //   escape(atob(config['rendered_report'])));
+        if (commandPageVersion == 'inquiry') {
+          configDisplay.innerHTML = `
+              <div class="section_container">
+                <span class="reach_config_section_title">
+                  Title
+                </span>
+                <div id="title" class="config_value"><span>Report title</span>
+                </div>
+              </div>
+              <div class="section_container">
+                <span class="reach_config_section_title" id="Dimensions">
+                  Dimensions
+                </span>
+                <div id="dimensions">
+                </div>
+              </div>
+              <div class="section_container">
+                <div class="reach_config_section_title" id="Measures">
+                  Measures
+                </div>
+                <div id="measures">
+                </div>
+              </div>
+              <div class="section_container">
+                <div class="reach_config_section_title" id="Filters">
+                  Filters
+                </div>
+                <div id="filters">
+                </div>
+              </div>
+              <div class="section_container">
+                <div class="reach_config_section_title" id="Sort">
+                  Sort
+                </div>
+                <div id="order">
+                </div>
+              </div>
+              <div class="section_container">
+                <div class="reach_config_section_title">
+                  Limit
+                </div>
+                <div id="limit" class="config_value"><span>Show all</span>
+                </div>
+              </div>
+              <div class="section_container">
+                <div class="reach_config_section_title">
+                  Chart
+                </div>
+                <div id="charts">
+                  <div id="chart_id" class="config_value"><span>PieChart</span>
+                  </div>
+                </div>
+              </div>`;
+        }
+        if (commandPageVersion == 'dashboard') {
+          configDisplay.innerHTML = `
+              <div class="section_container">
+              <div class="reach_config_section_title" id="Scope">
+                Scope
+              </div>
+              <div id="dashboard_filters">
+              </div>
+              </div>
+          `;
+        }
+
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        if (urlParams.get('modifiable') !== 'false') {
+          updateConfigValues(config, commandPageVersion);
+        }
+        if (commandPageVersion == 'inquiry') {
+          updateInquiryToQuery(config);
+        } else if (commandPageVersion == 'dashboard') {
+          for (let s of config['filters']) {
+            addScope(s);
+          }
+        }
+        hideComprehensionMessage(commandPageVersion);
+        intelligenceConfig = config.intelligence_config
+        delete config.intelligence_config;
+        currentConfig = config;
+
+        return config;
+      })
+      .catch(error => {
+        hideComprehensionMessage(commandPageVersion);
+        console.log(error);
+        if (error.this_is_ai_error) {
+          configDisplay.innerHTML = '<div><div class="reach_config_section_title">' +
+            'AI message</div><div class="config_value impressed">' + error.message + '</div></div>';
+        } else {
+          configDisplay.innerHTML = (
+            '<div class="infocard"><p class="infocard_paragraph">' +
+            'Apologies, an error occurred while comprehending your request.' +
+            '<br/>Please try again, if error persist, reach out <a href="https://mail.google.com/chat/u/0/#chat/space/AAAA5QegDdo">at our chat</a>.');
+        }
+        throw error;
+      });
+  }
+
+  var logicProgram = 'Greeting("Hello world!");';
+  var querySql = 'SELECT "Hello world!"';
+
+  function executeInquiryConfig() {
+    executeConfig(currentConfig, 'inquiry_report_dataframe_div', 'inquiry_report_div', 1000, 620);
+  }
+
+  // Caching chart type arguments. TODO: write JS parser.
+  let chart_call_to_args = new Map();
+  /**
+   * The function that actually turns the configs into readable data!
+   * @param configToExecute The config that represents the query we want to run.
+   * @param chartContainerId The id for the div that the chart will directly be contained within.
+   *   If using a dashboard-chart, this should just be the dashboard-chart's id.
+   * @param reportId The id for the div containing all of the charts on the page. Relevant
+   *   for error messaging or other cases where we need to remove all charts at once.
+   */
+  function executeConfig(configToExecute, chartContainerId, reportId, width, height) {
+    configToExecute.filters = configToExecute.filters.map(f => f.replaceAll
+    ("'", '"'));
+    console.log(configToExecute);
+    displayQueryMessage();
+    fetch('/execute_config?config=' + getIntelligenceConfigPath(),
+          {method: 'POST', body: JSON.stringify(configToExecute)})
+    .then(response => {
+      hideQueryMessage();
+      console.log('Response:');
+      console.log(response);
+      if (response.status == 502) {
+        return Promise.resolve(
+          JSON.stringify(
+            {"nice_error": ("Apologies, connection got broken. But we are trying to resolve your query. Please try the same question again in a few minutes.")}))
+      }
+      if (response.status != 200) {
+        return Promise.resolve(
+          JSON.stringify(
+            {"nice_error": ("Server returned an error. Status: " + response.status + `. If possible, please <a href="https://mail.google.com/chat/u/0/#chat/space/AAAA5QegDdo">kindly share with us</a> screenshot of this page, so we can debug.`)}))
+      }
+      return response.text()
+    })
+    .then(config_text => {
+      console.log('Config text:');
+      console.log(config_text);
+      let config = JSON.parse(config_text);
+      debug_config = config;
+      if (config.nice_error !== undefined) {
+        let niceError = config.nice_error;
+        let reportDiv = document.getElementById(reportId);
+        reportDiv.innerHTML = (
+          '<div class="infocard"><p class="infocard_paragraph">' +
+          '<div style="white-space: pre-wrap">' + niceError + '</div>' + letUsKnow + '</p>' +
+          '</div>');
+        return;
+      }
+      logicProgram = config['logical_program'];
+      querySql = config['sql'];
+      if (config.error !== undefined) {
+        let reportDiv = document.getElementById(reportId);
+        let error = atob(config.error);
+        let trace = atob(config.trace);
+        reportDiv.innerHTML = (
+          '<p>Something catastrophic happened:</p>' +
+          '<pre>' + error + '</pre><pre>' + trace + '</pre>');
+        return;
+      }
+
+      let dataFrame = config['data'];
+      let dataFrameTitle = config['title'];
+      if (reportId === 'inquiry_report_div') {
+        let reportDiv = document.getElementById(reportId);
+        reportDiv.innerHTML = (
+          '<div id="inquiry_report_dataframe_div" style="width:auto;height:auto;"></div>' +
+          '<img id="report_image" style="display:none" src=""/>')
+        inquiryDataFrame = dataFrame;
+        inquiryDataFrameTitle = dataFrameTitle;
+      }
+      chartType = config.chart_type_predicate_call.predicate_name;
+      chartArguments = config.chart_type_predicate_call.arguments;
+      // Cache parsing of arguments.
+      chart_call_to_args.set(config.chartType, config.chart_type_predicate_call.arguments);
+      renderDataframe(chartContainerId, dataFrame, dataFrameTitle, width, height, currentPageVersion, config);
+    })
+    .catch(error => {
+      hideQueryMessage();
+      let reportDiv = document.getElementById(reportId);
+      reportDiv.innerHTML = (
+        '<div class="infocard"><p class="infocard_paragraph">' +
+        'Apologies, an error occurred in the UI.' +
+        '<div class="infocard_paragraph impressed">JS error:' + error + '</div>');
+      throw error;
+    });
+
+  }
+  function getIntelligenceConfigPath() {
+    return (new URLSearchParams(location.search)).get('config')
+  }
+  let executeWhatAppropriate = () => {
+    console.log('Page version:', currentPageVersion);
+    if (currentPageVersion == PageOption.Inquiry) {
+      inquiryExecuteWhatAppropriate();
+    } else if (currentPageVersion == PageOption.Dashboard) {
+      dashboardExecuteWhatAppropriate();
+    } else {
+      console.error('Unexpected page version: ' + currentPageVersion);
+    }
+  }
+  let inquiryExecuteWhatAppropriate = () => {
+    understandAndExecute();
+  }
+  let dashboardExecuteWhatAppropriate = () => {
+    understandAndUpdateDashboards();
+  }
+
+  function setExecutionToLlm() {
+    let userCommandId = currentPageVersion + '_user_command';
+    if (currentPageVersion === PageOption.Inquiry) {
+      inquiryExecuteWhatAppropriate = understandAndExecute;
+    } else if (currentPageVersion === PageOption.Dashboard) {
+      dashboardExecuteWhatAppropriate = understandAndUpdateDashboards;
+    } else {
+      console.error('Unexpected page version: ' + currentPageVersion);
+    }
+    let user_command_div = document.getElementById(userCommandId);
+    user_command_div.classList.remove('user_command_deactivated');
+    let control_pane = document.getElementById(currentPageVersion + '_control_pane');
+    control_pane.classList.remove('control_pane_leaning_down');
+    control_pane.classList.add('control_pane_leaning_up');
+  }
+  function setExecutionToJson() {
+    if (currentPageVersion == PageOption.Inquiry) {
+      inquiryExecuteWhatAppropriate = updateAndExecuteConfig;
+    } else if (currentPageVersion == PageOption.Dashboard) {
+      dashboardExecuteWhatAppropriate = updateAndExecuteDashboardCharts;
+    } else {
+      console.error('Unexpected page version: ' + currentPageVersion);
+    }
+    let userCommandId = currentPageVersion + '_user_command';
+    let user_command_div = document.getElementById(userCommandId);
+    user_command_div.classList.add('user_command_deactivated');
+    let control_pane = document.getElementById(currentPageVersion + '_control_pane');
+    control_pane.classList.add('control_pane_leaning_down');
+    control_pane.classList.remove('control_pane_leaning_up');
+  }
+
+  function understandAndExecute() {
+    if (currentPageVersion == PageOption.Inquiry) {
+      understandAndExecuteInquiry();
+    } else if (currentPageVersion == PageOption.Dashboard) {
+      understandAndUpdateDashboards();
+    } else {
+      console.error('Unexpected page version: ' + currentPageVersion);
+    }
+  }
+  function understandAndExecuteInquiry() {
+    understandCommand().then((whatever) => executeInquiryConfig());
+  }
+  function understandAndUpdateDashboards() {
+    understandCommand().then((whatever) => updateAndExecuteDashboardCharts());
+  }
+
+  function displayComprehensionMessage(pageVersion) {
+    let configGlassPaneId = pageVersion + '_config_glass_pane';
+    let config_glass_pane = document.getElementById(configGlassPaneId);
+    config_glass_pane.classList.add('bring_glass_pane_up');
+    comprehensionStart = Date.now();
+  }
+
+  function hideComprehensionMessage(pageVersion) {
+    let configGlassPaneId = pageVersion + '_config_glass_pane';
+    let config_glass_pane = document.getElementById(configGlassPaneId);
+    config_glass_pane.classList.remove('bring_glass_pane_up');
+    comprehensionStart = null;
+  }
+
+  function displayQueryMessage() {
+    let report_glass_pane = document.getElementById('report_glass_pane');
+    report_glass_pane.classList.add('bring_glass_pane_up');
+    queryStart = Date.now();
+  }
+  function hideQueryMessage() {
+    let report_glass_pane = document.getElementById('report_glass_pane');
+    report_glass_pane.classList.remove('bring_glass_pane_up');
+    queryStart = null;
+  }
+
+  // < - sample questions cut. do not modify. - >
+  var luckyRequests = [
+          "Show me some cool report please. Name it explaining what it does."
+      ];
+  // < - sample questions cut. do not modify. - >
+  function iAmFeelingLucky() {
+    let requestsNum = luckyRequests.length;
+    let i = Math.floor(Math.random() * requestsNum);
+    document.getElementById('inquiry_user_command').textContent = luckyRequests[i];
+    setExecutionToLlm();
+    understandAndExecute();
+  };
+  function iAmAboutToFeelLucky() {
+    let report_glass_pane = document.getElementById('report_glass_pane');
+    report_glass_pane.classList.add('bring_glass_pane_up');
+
+    setTimeout(() => {
+      let b = document.getElementById('lucky_button');
+      b.classList.add('quazy_active');
+      iAmFeelingLucky();
+      setTimeout(() => {b.classList.remove('quazy_active')}, 1000);
+    }, 1000);
+  }
+
+  /////////////////////////////////
+  // Data export functions.
+
+  function downloadCsv() {
+    let makeLine = (line) => line.join(',');
+    let makeCsv = (table) => table.map(makeLine).join('\n');
+    let csv = makeCsv(inquiryDataFrame);
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], {type: 'text/plain'}));
+    a.download = inquiryDataFrameTitle + '.csv';
+    a.click();
+  }
+
+  /////////////////////////////////////
+  // Populating the default question.
+
+  function getDefaultQuestion() {
+    return (new URLSearchParams(location.search)).get('icebreaker')
+  }
+  let defaultQuestion = getDefaultQuestion();
+  if (defaultQuestion !== undefined && defaultQuestion != '' && defaultQuestion !== null) {
+    document.getElementById('inquiry_user_command').value = defaultQuestion;
+    setTimeout(() => (understandCommand().then((whatever) => executeInquiryConfig())), 1000);
+  }
+
+  /////////////////////////////////
+  // Creating event handlers.
+
+  let comprehensionStart = null;
+  let queryStart = null;
+  setInterval(() => {
+    let inquiry_query_timer = document.getElementById('inquiry_query_timer');
+    if (inquiry_query_timer === null || queryStart === null) {
+      // pass
+    } else {
+      inquiry_query_timer.innerHTML = 'Working for ' + ((Date.now() - queryStart) / 1000).toFixed(2) + ' seconds.';
+    }
+
+    let inquiry_comprehension_timer = document.getElementById('inquiry_comprehension_timer');
+    if (inquiry_comprehension_timer === null || comprehensionStart === null) {
+      return;
+    }
+    inquiry_comprehension_timer.innerHTML = 'Working for ' + ((Date.now() - comprehensionStart) / 1000).toFixed(2) + ' seconds.';
+
+    let dashboard_comprehension_timer = document.getElementById('dashboard_comprehension_timer');
+    if (dashboard_comprehension_timer === null || comprehensionStart === null) {
+      return;
+    }
+    dashboard_comprehension_timer.innerHTML = 'Working for ' + ((Date.now() - comprehensionStart) / 1000).toFixed(2) + ' seconds.';
+  }, 130);
+
+  document.onkeydown = function(e) {
+    if (e.ctrlKey && e.keyCode == 13) {
+      let theButtons = document.querySelectorAll('[id=do_what_i_mean]');
+      executeWhatAppropriate();
+      for (theButton of theButtons) {
+        theButton.classList.add('quazy_active');
+      }
+      setTimeout(() => {
+        for (theButton of theButtons) {
+          theButton.classList.remove('quazy_active');
+        }
+      }, 300);
+    }
+
+    if (e.key === "Escape") {
+      hideModal();
+    }
+
+    if (e.key === "Enter") {
+      saveModal();
+    }
+  }
+  const letUsKnow = '<br/><br/>If this message is unexpected ' +
+                'or you simply have questions, please ' +
+                '<a href="https://mail.google.com/chat/u/0/#chat/space/AAAA5QegDdo">' +
+                'reach out</a>.'
+
+  </script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+  .material-icons {
+    font-size: inherit;
+    color: rgba(0, 0, 0, 0.7);
+    vertical-align: text-bottom;
+  }
+  body {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  body, h1{
+    padding: 0;
+    margin: 0;
+    /* font-family: 'Ubuntu', sans-serif; */
+    font-family: 'Nunito', sans-serif;
+  }
+  .header {
+    width: calc(100%-30px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    margin-bottom: 0;
+    /* padding: 10px; */
+    color: #333;
+    display: flex;
+    flex-flow: row;
+    align-items: center;
+    padding: 10px;
+    padding-left: 30px;
+    background-color: white;
+    height: 80px;
+  }
+
+  .logo {
+    width: 70px;
+  }
+
+  h1 {
+    padding-left: 15px;
+    font-size: 40px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 500;
+  }
+
+  .inquiry_mode .dashboard_component {
+    display: none;
+  }
+
+  .dashboard_mode .inquiry_component {
+    display: none;
+  }
+
+  .insights_body {
+    display: flex;
+    flex-flow: row;
+    padding: 5px;
+  }
+
+  .config_pane,
+  .chart_pane {
+    box-sizing: border-box;
+    margin: 3px;
+    border: solid 1px rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    padding: 10px;
+    position: relative;
+    background-color: white;
+  }
+
+  .glass_pane {
+    position: absolute;
+    display: flex;
+    flex-flow: column;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    backdrop-filter: blur(30px) brightness(1.1) grayscale(30%);
+    transition: 0.5s;
+    font-family: 'Nunito', sans-serif;
+    font-size: 20px;
+    align-items: center;
+    justify-content: center;
+    z-index: -1;
+    opacity: 0;
+  }
+  .bring_glass_pane_up {
+    z-index: 1000;
+    opacity: 1;
+  }
+
+  .config_pane {
+    flex: 1;
+    max-width: 500px;
+  }
+  .chart_pane {
+    flex: 2;
+  }
+
+  .config_pane {
+    padding: 0;
+  }
+
+  .pane_header {
+    font-size: 1.1em;
+    padding-left: 10px;
+    color: rgba(50, 50, 50);
+    margin-bottom: 10px;
+  }
+
+  .user_request {
+    margin-top: 5px;
+    box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    padding: 10px;
+    height: 150px;
+    outline: none;
+    transition: 1s;
+    resize: none;
+    outline: none;
+    display: block;
+    position: relative;
+  }
+
+  .user_command_deactivated {
+    color: rgba(0, 0, 0, 0.2);
+  }
+
+  .edited_hint,
+  .ctrl_enter_hint,
+  .click_to_edit_hint {
+    position: absolute;
+    right: 7px;
+    bottom: 4px;
+    color: rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: 0.2s;
+    font-style: italic;
+  }
+
+  .edited_hint {
+    color: rgba(0, 0, 0, 0.8);
+    bottom: 20px;
+  }
+
+  .user_request:focus {
+    /* border-color: blue; */
+  }
+
+  .user_request_underline {
+    background-color: white;
+    width: 0%;
+    height:2px;
+    transition: 0.2s;
+    text-align: center;
+    background-color: rgb(66, 80, 175);
+  }
+  .underline_box {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    width: 100%;
+    position: relative;
+  }
+  .user_request:focus + .underline_box .user_request_underline {
+    background-color: blue;
+    width: 100%;
+    margin: 0;
+  }
+
+  .user_request:hover + .underline_box .click_to_edit_hint {
+    opacity: 1;
+  }
+
+  .user_request:focus:hover + .underline_box .ctrl_enter_hint {
+    opacity: 1;
+  }
+  .user_request:focus:hover + .underline_box .click_to_edit_hint {
+    opacity: 0;
+  }
+  .user_command_deactivated + .underline_box .edited_hint {
+    opacity: 1;
+  }
+
+  .button_bar {
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+  }
+  .button {
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+    border-radius: 2px;
+    padding: 10px;
+    margin: 3px;
+    transition: 0.1s;
+    background-color: rgba(250, 250, 250);
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+  }
+  .button:hover {
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+    background-color: white;
+  }
+  .button:active, .quazy_active {
+    background-color: rgba(244, 186, 115);
+    transform: scale(0.98);
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0);
+  }
+  .config_space {
+    margin-top: 0;
+    padding-top: 5px;
+  }
+
+  .control_pane {
+    margin-top: 5px;
+    border-bottom: solid 1px rgba(0, 0, 0, 0.3);
+    border-top: solid 1px rgba(0, 0, 0, 0.3);
+    transition: 0.5s;
+  }
+  .control_pane_leaning_up {
+    padding-bottom: 18px;
+    border-top: solid 1px rgba(0, 0, 0, 0.0);
+  }
+  .control_pane_leaning_down {
+    padding-top: 18px;
+    border-bottom: solid 1px rgba(0, 0, 0, 0.0);
+  }
+
+  .request_space,
+  .config_space {
+    padding: 10px 10px 0;
+  }
+
+  .reach_config {
+    border-radius: 2px;
+    /* border:  solid 1px rgba(0, 0, 0, 0.1); */
+    padding: 5px;
+    position: relative;
+  }
+
+  .reach_config_section_title {
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+  }
+
+  .modifiable_config_section_title {
+    color: rgba(0, 0, 0, 0.6);
+    float: left;
+    font-weight: bold;
+    line-height: 16px;
+  }
+
+  .section_container {
+    display: flow-root;
+    margin-top: 4px;
+  }
+
+  .config_dropdown {
+    display: inline-flex;
+    width: calc(100% - 4px);
+  }
+
+  .order_dropdown {
+    display: inline-flex;
+    width: calc(100% - 132px);
+  }
+
+  .direction_dropdown {
+    display: inline-flex;
+    width: 124px;
+  }
+
+  .unmodifiable_config_value,
+  .modifiable_config_value {
+    display: inline-flex;
+    width: calc(100% - 20px);
+
+    .material-icons {
+      line-height: inherit;
+      margin-left: 2px;
+    }
+  }
+
+  .config_value,
+  .config_dropdown,
+  .unmodifiable_config_value,
+  .modifiable_config_value,
+  .order_dropdown,
+  .direction_dropdown {
+    background-color: rgba(206, 229, 203, 1);
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    margin: 2px;
+    overflow: hidden;
+    padding: 6px;
+    padding-left: 10px;
+  }
+
+  .modal_background {
+    background: rgba(0,0,0,.25);
+    bottom: 0;
+    display: none;
+    left: 0;
+    position: fixed;
+    right: 0;
+    top: 0;
+    z-index: 1001;
+  }
+
+  .modal {
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 0 16px rgba(0,0,0,0.2);
+    display: none;
+    height: 450px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    position: absolute;
+    right: -318px;
+    width: 300px;
+    z-index: 2000;
+  }
+
+  .inquiry_mode .modal {
+    bottom: 0;
+  }
+
+  .dashboard_mode .modal {
+    top: 0;
+  }
+
+  .modal_input_container {
+    background: white;
+    border-bottom: 1px black;
+    padding: 12px 0;
+    position: sticky;
+    top: 0;
+    width: inherit;
+  }
+
+  .modal_input {
+    border: none;
+    border-bottom: 1px solid;
+    font-size: 16px;
+    margin: 0 2em;
+    overflow: hidden;
+    padding: 6px;
+    padding-left: 10px;
+    width: 186px;
+  }
+
+  .modal_selector {
+    background-color: rgba(206, 229, 203, 1);
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 6px 0;
+    padding: 6px;
+    user-select: none;  /* Paradox! */
+  }
+
+  .close-button,
+  .save-button,
+  .arrow-button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    line-height: 1em;
+    padding: 1em;
+    position: absolute;
+    top: 0;
+  }
+
+  .save-button {
+    right: 32px;
+  }
+
+  .close-button {
+    right: 0;
+  }
+
+  .arrow-button {
+    left: 0;
+  }
+
+  .modal_body_container {
+    margin: 0 2em;
+  }
+
+  .button_container {
+    background: white;
+    border-top: 1px solid black;
+    bottom: -2px;
+    padding: 8px 2em;
+    position: sticky;
+  }
+
+  .config_value:hover,
+  .config_dropdown:hover,
+  .modifiable_config_value:hover,
+  .order_dropdown:hover,
+  .direction_dropdown:hover {
+    background-color: rgba(175, 213, 171, 1);
+  }
+
+  .config_dropdown,
+  .modifiable_config_value,
+  .order_dropdown,
+  .direction_dropdown {
+    cursor: pointer;
+  }
+
+  .config_option,
+  .row_option {
+    cursor: pointer;
+    display: none;
+    font-weight: 500;
+    width: fit-content;
+  }
+
+  .config_option {
+    color: rgb(66, 133, 244);
+    float: right;
+    font-size: 16px;
+    line-height: 16px;
+
+    .material-icons {
+      color: inherit;
+      margin-left: 2px;
+    }
+  }
+
+  .config_option:hover {
+    color: rgb(25, 103, 210);
+  }
+
+  .row_option {
+    right: 12px;
+    padding: 0 6px;
+    position: absolute;
+  }
+
+  .row_option,
+  .arrow_option {
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  .row_option:hover, .arrow_option:hover {
+    color: rgba(0, 0, 0, 1);
+  }
+
+  .section_container:hover .config_option {
+    display: inline-flex;
+  }
+
+  .modifiable_config_value:hover .row_option {
+    display: inline-flex;
+  }
+
+  .analysis {
+    display: flex;
+    flex-flow: row;
+    justify-content: center;
+    position: relative;
+  }
+
+  .header_helper {
+    display: flex;
+    flex-direction: column;
+    /* margin-left: auto; */
+    justify-content: space-between;
+    height: 100%;
+    margin-left: auto;
+  }
+
+  .header_title {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .header_hover_button {
+    text-decoration: none;
+    color: #999;
+    margin-right: 10px;
+  }
+
+  .header_hover_button:hover {
+    color: #111;
+  }
+
+  .insightful_table_cell {
+    transition: 0.5s;
+    position: relative;
+  }
+  .insightful_table_cell:hover {
+    text-decoration: underline;
+    transition: 0.5s;
+  }
+  .insightful_table_cell:hover::after {
+    content: 'Click to copy to request';
+    position: absolute;
+    color: rgba(0, 0, 0, 0.6);
+    top: 0;
+    right: 0;
+    font-size: 13px;
+    display: inline;
+  }
+  .table_font,
+  .insightful_table_cell {
+    font-size: 15px;
+  }
+  .infocard {
+    box-sizing: border-box;
+    margin: 3px;
+    border: solid 1px rgba(200, 200, 0, 0.4);
+    border-radius: 5px;
+    padding: 10px;
+    background-color: white;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .infocard_paragraph {
+    font-size: 1.1em;
+  }
+
+  .tagline {
+    font-family: 'Nunito', sans-serif;
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: bold;
+    margin-right: 10px;
+  }
+
+  .timer {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+    padding: 40px;
+    border-radius: 20px;
+  }
+
+  .google-visualization-table-table {
+    font-family: 'Nunito', sans-serif !important;
+  }
+
+  .impressed {
+    box-shadow: inset 1px 1px 3px rgba(0,0,0,0.3);
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  .sql_screen {
+    font-size: 20px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+    width: 800px;
+    min-height:300px;
+    margin-bottom:20px;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .section_button_container {
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .inquiry_button,
+  .dashboard_button {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    line-height: 36px;
+    margin: 4px;
+    padding: 8px;
+  }
+
+  .inquiry_mode .inquiry_button,
+  .dashboard_mode .dashboard_button {
+    box-shadow: inset 1px 1px 3px rgba(0, 0, 0, 0.2);
+    color: black;
+    cursor: default;
+  }
+
+  .kaleidoscope {
+    display: grid;
+    grid-template-columns: repeat(6, 150px);
+    gap: 10px;
+  }
+
+  .kaleidoscope_shard {
+    align-items: center;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+    text-justify: center;
+  }
+
+  .kaleidoscope_shard_3_by_2 {
+    grid-column: span 3;
+    grid-row: span 2;
+    height: 310px;
+    width: 470px;
+  }
+
+  .kaleidoscope_shard_4_by_3 {
+    grid-column: span 4;
+    grid-row: span 3;
+    height: 470px;
+    width: 630px;
+  }
+
+  .kaleidoscope_shard_4_by_2 {
+    grid-column: span 4;
+    grid-row: span 2;
+    height: 310px;
+    width: 630px;
+  }
+  .kaleidoscope_shard_2_by_2 {
+    grid-column: span 2;
+    grid-row: span 2;
+    height: 310px;
+    width: 310px;
+  }
+
+  .kaleidoscope_shard_6_by_2 {
+    grid-column: span 6;
+    grid-row: span 2;
+    height: 310px;
+    width: 950px;
+  }
+
+  .kaleidoscope_shard_5_by_1 {
+    grid-column: span 5;
+    grid-row: span 1;
+    height: 150px;
+    width: 790px;
+  }
+
+  .kaleidoscope_shard_6_by_1 {
+    grid-column: span 6;
+    grid-row: span 1;
+    height: 150px;
+    width: 950px;
+  }
+
+  .kaleidoscope_shard_6_by_4 {
+    grid-column: span 6;
+    grid-row: span 4;
+    height: 630px;
+    width: 950px;
+  }
+
+  .kaleidoscope_shard_1_by_1 {
+    grid-column: span 1;
+    grid-row: span 1;
+    height: 150px;
+    width: 150px;
+  }
+</style>
+</head>
+<body>
+<div id="modal_background" class="modal_background"
+     onclick="hideModal()"></div>
+<div class="header">
+  <div class="header_title">
+    <!-- header title cut. do not modify. -->
+    <img class="logo" src="/logiclm.png" alt="LogicLM Logo" style="height:60px;width:auto;"/>
+    <h1></h1>
+    <!-- header title cut. do not modify. -->
+  </div>
+  <div class="header_helper">
+    <div style="margin-left: auto;color: #999;">
+      <div style="display: none">
+      <a href="http://TODO: feedback link here" target="_blank"><span class="material-icons header_hover_button" style="font-size: 1.2em">feedback</span></a>
+      <a href="http://TODO: help link here" target="_blank"><span class="material-icons header_hover_button" style="font-size: 1.2em">help</span></a>
+      </div>
+    </div>
+    <div class="tagline">
+      The only true wisdom is in knowing you know nothing.
+      <div id="button_container" class="section_button_container">
+        <span id="dashboard_button" class="dashboard_button" onclick="setView(PageOption.Dashboard)">Dashboard</span>
+        <span id="inquiry_button" class="inquiry_button" onclick="setView(PageOption.Inquiry)">Inquiry</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="insights_body">
+<div class="config_pane">
+  <div id="dashboard_config" class="dashboard_component">
+    <div class="request_space">
+      <div class="reach_config">
+        <div class="section_container" id="dashboards">
+          <div class="reach_config_section_title">
+            Dashboard
+          </div>
+          <div class="modifiable_config_value" onclick="openDashboardModal()" id="dashboard_selector"><span>Select a dashboard</span></div>
+        </div>
+      </div>
+      <div class="pane_header">
+        What scope would you like to add?
+      </div>
+      <div class="user_request" onclick="setExecutionToLlm()" contenteditable="true" id="dashboard_user_command">
+        Describe your scope here.
+      </div>
+      <div class="underline_box">
+        <div class="user_request_underline"></div>
+        <div class="edited_hint" id="edited_hint">Configuration is specified directly</div>
+        <div class="ctrl_enter_hint">Ctrl+Enter to Run</div>
+        <div class="click_to_edit_hint">Click to edit</div>
+      </div>
+    </div>
+    <div class="control_pane control_pane_leaning_up" id="dashboard_control_pane">
+      <div class="button_bar">
+        <div id="do_what_i_mean" class="button do_what_i_mean_button" onclick="executeWhatAppropriate()">UPDATE DASHBOARD</div>
+      </div>
+    </div>
+    <div class="config_space" onclick="setExecutionToJson()">
+      <div class="reach_config">
+        <div class="glass_pane" style="border-radius: 2px;" id="dashboard_config_glass_pane">
+          <div id="dashboard_config_glass_pane_message" class="timer">
+            <div style="text-shadow: 0 0 4px rgba(255, 255, 255, 0.8)">
+              Comprehending your request.
+            </div>
+            <div id="dashboard_comprehension_timer"></div>
+          </div>
+        </div>
+        <div class="reach_config">
+          <div id="dashboard_config_display">
+            <div class="section_container">
+              <div class="reach_config_section_title" id="Scope">
+                Scope
+              </div>
+              <div id="dashboard_filters">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="inquiry_config" class="inquiry_component">
+    <div class="request_space">
+      <div class="pane_header">
+        What would you like to see?
+      </div>
+      <div class="user_request" onclick="setExecutionToLlm()" contenteditable="true" id="inquiry_user_command">Enter your request here.</div>
+      <div class="underline_box">
+        <div class="user_request_underline"></div>
+        <div class="edited_hint" id="edited_hint">Configuration is specified directly</div>
+        <div class="ctrl_enter_hint">Ctrl+Enter to Run</div>
+        <div class="click_to_edit_hint">Click to edit</div>
+      </div>
+    </div>
+    <div class="control_pane control_pane_leaning_up" id="inquiry_control_pane">
+      <div class="button_bar">
+        <div id="do_what_i_mean" class="button do_what_i_mean_button" onclick="executeWhatAppropriate()">RUN ANALYSIS</div>
+        <div class="button" onclick="iAmFeelingLucky()" id="lucky_button">I AM FEELING LUCKY</div>
+      </div>
+    </div>
+
+
+    <div class="config_space" onclick="setExecutionToJson()">
+      <div class="reach_config">
+        <div class="glass_pane" style="border-radius: 2px;" id="inquiry_config_glass_pane">
+          <div id="inquiry_config_glass_pane_message" class="timer">
+            <div style="text-shadow: 0 0 4px rgba(255, 255, 255, 0.8)">
+              Comprehending your request.
+            </div>
+            <div id="inquiry_comprehension_timer"></div>
+          </div>
+        </div>
+        <div class="reach_config">
+          <div id="inquiry_config_display">
+            <div class="section_container">
+              <span class="reach_config_section_title">
+                Title
+              </span>
+              <div id="title" class="config_value"><span>Insightful report</span>
+              </div>
+            </div>
+            <div class="section_container">
+              <span class="reach_config_section_title" id="Dimensions">
+                Dimensions
+              </span>
+              <div id="dimensions">
+              </div>
+            </div>
+            <div class="section_container">
+              <div class="reach_config_section_title" id="Measures">
+                Measures
+              </div>
+              <div id="measures">
+              </div>
+            </div>
+            <div class="section_container">
+              <div class="reach_config_section_title" id="Filters">
+                Filters
+              </div>
+              <div id="filters">
+              </div>
+            </div>
+            <div class="section_container">
+              <div class="reach_config_section_title" id="Sort">
+                Sort
+              </div>
+              <div id="order">
+              </div>
+            </div>
+            <div class="section_container">
+              <div class="reach_config_section_title">
+                Limit
+              </div>
+              <div id="limit" class="config_value"><span>Show all</span>
+              </div>
+            </div>
+            <div class="section_container">
+              <div class="reach_config_section_title">
+                Chart
+              </div>
+              <div id="charts">
+                <div id="chart_id" class="config_value"><span>BarChart</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="modifiableConfig">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="modal" class="modal">
+    <div class="modal_input_container">
+      <button id="order_arrow" class="arrow-button material-icons"
+              onclick="toggleOrderModalArrow()">
+        north_east
+      </button>
+      <input id="modal_label" class="modal_input" value="">
+      </input>
+      <button class="save-button material-icons" onclick="saveModal()">
+        send
+      </button>
+      <button id="close-button" class="close-button" aria-label="close"
+              tabindex="0" onclick="hideModal()">
+        ✕
+      </button>
+    </div>
+    <div class="modal_body_container">
+      <div>
+        Quick options
+      </div>
+      <div id="modal_options">
+      </div>
+    </div>
+  </div>
+</div>
+  <script>
+
+  /***************
+   *  Script that makes config editable.
+   */
+  var idToReplace = '';
+  var i = 0;
+  // < - example query cut out line. do not modify ->
+  let exampleQuery = {}
+  // < - example query cut out line. do not modify ->
+
+  function clearInquiryMode() {
+    document.getElementById('inquiry_user_command').textContent = '';
+    document.getElementById('dimensions').innerHTML = '';
+    document.getElementById('measures').innerHTML = '';
+    document.getElementById('filters').innerHTML = '';
+    document.getElementById('order').innerHTML = '';
+    document.getElementById('charts').innerHTML = '';
+  }
+
+  function updateInquiryToQuery(query) {
+    clearInquiryMode();
+    document.getElementById('inquiry_user_command').textContent = query.exampleQuery;
+    document.getElementById('title').firstChild.innerHTML = query.title;
+    if (query.dimensions) {
+      for (dimension of query.dimensions) {
+        addDimension(dimension);
+      }
+    }
+    if (query.measures) {
+      for (measure of query.measures) {
+        addMeasure(measure);
+      }
+    }
+    if (query.filters) {
+      for (filter of query.filters) {
+        addFilter(filter);
+      }
+    }
+    if (query.order) {
+      console.log('Order:', query.order)
+      for (order of query.order) {
+        addOrder(order);
+      }
+    }
+    document.getElementById('limit').textContent = (query.limit == -1 ? 'Show all' : query.limit);
+    addChart(query.chartType);
+    updateInquiryConfig();
+  }
+
+  function saveModal() {}
+
+  function updateDashboardFromModal() {
+    let value = document.getElementById('modal_label').value;
+    updateToDashboard(value);
+  }
+
+  function openDashboardModal() {
+    showModal(getDashboardOptions, 'dashboards', 'dashboard_selector', false, false, '', 'dashboard_selector', updateDashboardFromModal, true);
+  }
+
+  function showModal(optionsGetter, parentId, valueId, canBeDeleted, showArrow, value, enterId, onSave, hideParens) {
+    hideModal();
+    populateModalOptions(optionsGetter(), hideParens);
+    idToReplace = enterId;
+    if (enterId) {
+      document.getElementById(enterId).style['background-color'] =
+        'rgba(175, 213, 171, 1)';
+    }
+    var labelElement = document.getElementById('modal_label');
+    labelElement.value = value || '';
+    document.getElementById('order_arrow').style.display = showArrow ? 'block' : 'none';
+    if (showArrow && enterId) {
+      var arrowDirection = document.getElementById(enterId).childNodes.item(2).innerHTML;
+      document.getElementById('order_arrow').innerHTML = arrowDirection;
+    }
+    document.getElementById('modal').style.display = 'block';
+    document.getElementById('modal').scrollTop = 0;
+    document.getElementById('modal_background').style.display = 'block';
+
+    saveModal = () => {
+      addModalSelector(optionsGetter, parentId, valueId, canBeDeleted, showArrow, onSave, hideParens);
+      if (onSave) {
+        onSave();
+      } else {
+        setExecutionToJson();
+      }
+    }
+  }
+
+  function toggleOrderModalArrow() {
+    var arrow = document.getElementById('order_arrow');
+    arrow.innerHTML = arrow.innerHTML === 'south_east' ? 'north_east' : 'south_east';
+    setExecutionToJson();
+  }
+
+  function hideModal() {
+    if (idToReplace) {
+      document.getElementById(idToReplace).style['background-color'] = '';
+      idToReplace = '';
+    }
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('modal_background').style.display = 'none';
+    document.getElementById('order_arrow').innerHTML = 'north_east';
+
+    saveModal = () => {};
+  }
+
+  function getModalOptions(configOptions, identifier) {
+    let outputOptions = [];
+    for (var option of configOptions) {
+      outputOptions.push(option[identifier]);
+    }
+    return outputOptions;
+  }
+
+  function getDimensionOptions() {
+    return getModalOptions(intelligenceConfig["aiDataRequest"]["dimensions"],"functionName");
+  }
+
+  function getMeasureOptions() {
+    return getModalOptions(intelligenceConfig["aiDataRequest"]["measures"],"aggregatingFunctionName");
+  }
+
+  function getFilterOptions() {
+    return getModalOptions(intelligenceConfig["aiDataRequest"]["filters"],"predicateName");
+  }
+
+  function getChartOptions() {
+    return getModalOptions(
+      intelligenceConfig['aiVisualizationRequest']['chartTypes'],
+      'chartTypeName');
+  }
+
+  function getModalValueString(identifierName, excludeParens) {
+    if (excludeParens) {
+      return identifierName;
+    }
+    let detailedParameters = [];
+    for (dimension of intelligenceConfig["aiDataRequest"]["dimensions"]) {
+      if (dimension.functionName === identifierName) {
+        detailedParameters = dimension.parameterNames || [];
+      }
+    }
+    for (measure of intelligenceConfig["aiDataRequest"]["measures"]) {
+      if (measure.aggregatingFunctionName === identifierName) {
+        detailedParameters = measure.parameterNames || [];
+      }
+    }
+    for (filter of intelligenceConfig["aiDataRequest"]["filters"]) {
+      if (filter.predicateName === identifierName) {
+       detailedParameters = filter.detailedParameters || [];
+      }
+    }
+    let identifierParamString = '';
+    if (detailedParameters.length > 0) {
+      for (detailedParam of detailedParameters) {
+        identifierParamString += detailedParam.name + ': ' + detailedParam.placeholderValue + ', ';
+      }
+    }
+    identifierParamString = removeTrailingComma(identifierParamString.trim());
+    return identifierName + '(' + identifierParamString + ')';
+  }
+
+  function populateModalOptions(options, excludeParens) {
+    var modalOptionContainer = document.getElementById('modal_options');
+    modalOptionContainer.innerHTML = '';
+    for (var option of options) {
+      var newOption = document.createElement('div');
+      newOption.classList.add('modal_selector');
+      let identifierName = option;
+      newOption.innerHTML = option;
+      newOption.onclick = () => {
+        var label = document.getElementById('modal_label');
+        label.value = getModalValueString(identifierName, excludeParens);
+      };
+      newOption.ondblclick = () => {
+        var label = document.getElementById('modal_label');
+        label.value = getModalValueString(identifierName, excludeParens);
+        saveModal();
+      };
+
+      modalOptionContainer.appendChild(newOption);
+    }
+  }
+
+  function getDashboardOptions() {
+    let dashboardOptions = [];
+    for (dashboard of dashboardMappings) {
+      if (dashboard.title !== 'default') {
+        dashboardOptions.push(dashboard.title);
+      }
+    }
+    return dashboardOptions;
+  }
+
+  function addModalSelector(optionsGetter, parentId, valueId, canBeDeleted, showArrow, onModalSave, hideParens) {
+    let value = document.getElementById('modal_label').value;
+    let arrowDirection = document.getElementById('order_arrow').innerHTML;
+    if (!value) {
+      return;
+    }
+    addValue(
+      optionsGetter,
+      value,
+      parentId,
+      idToReplace ? idToReplace : valueId + i,
+      canBeDeleted,
+      showArrow
+        ? arrowDirection
+        : null,
+      onModalSave,
+      hideParens);
+    i++;
+    hideModal(modal);
+  }
+
+  function removeValue(valueId) {
+    let value = document.getElementById(valueId);
+    value.remove();
+    updateOrderOptions();
+  }
+
+  function createDeleteIcon() {
+    var deleteIcon = document.createElement('span');
+    deleteIcon.classList.add('row_option');
+    deleteIcon.classList.add('material-icons');
+    deleteIcon.innerHTML = 'delete';
+    return deleteIcon;
+  }
+
+  function addValue(optionsGetter, value, parentId, valueId, canBeDeleted, directionArrow, onModalSave, hideParens) {
+    var valueSection;
+    var valueSectionContainer;
+    var deletionMarker;
+    if (idToReplace) {
+      valueSectionContainer = document.getElementById(idToReplace);
+      valueSection = valueSectionContainer.childNodes.item(0);
+      if (canBeDeleted) {
+        deletionMarker = valueSectionContainer.childNodes.item(1);
+      }
+    } else {
+      var parentSection = document.getElementById(parentId);
+      valueSectionContainer = document.createElement('span');
+      valueSectionContainer.classList.add('value_container');
+      valueSectionContainer.classList.add('modifiable_config_value');
+      valueSection = document.createElement('span');
+      parentSection.appendChild(valueSectionContainer);
+      if (canBeDeleted) {
+        deletionMarker = createDeleteIcon();
+      }
+    }
+    valueSectionContainer.id = valueId;
+    valueSectionContainer.onclick = () => showModal(
+      optionsGetter,
+      parentId,
+      valueId,
+      canBeDeleted,
+      !!directionArrow,
+      value,
+      valueId,
+      onModalSave,
+      hideParens);
+    if (canBeDeleted) {
+      deletionMarker.onclick = (event) => {
+        removeValue(valueId);
+        setExecutionToJson();
+        event.stopPropagation();
+      }
+    }
+    if (!value || value.slice(-2) !== '()') {
+      valueSection.innerHTML = value;
+    } else {
+      valueSection.innerHTML = value.slice(0, -2);
+    }
+    if (!idToReplace) {
+      valueSectionContainer.appendChild(valueSection);
+      if (canBeDeleted) {
+        valueSectionContainer.appendChild(deletionMarker);
+      }
+    }
+    if (directionArrow) {
+      var arrowMarker = createArrowMarker();
+      if (!idToReplace) {
+        valueSectionContainer.appendChild(arrowMarker);
+      } else {
+        arrowMarker = valueSectionContainer.childNodes.item(2);
+      }
+      arrowMarker.innerHTML = directionArrow;
+    }
+    updateOrderOptions();
+  }
+
+  function createArrowMarker() {
+    var arrowMarker = document.createElement('span');
+    arrowMarker.classList.add('material-icons');
+    arrowMarker.classList.add('arrow_option');
+    arrowMarker.id = 'orderArrow' + i;
+    i++;
+    arrowMarker.onclick = (event) => {
+      toggleOrderArrow(arrowMarker);
+      event.stopPropagation();
+    }
+    // Users should set the direction after creating the arrow - in case they
+    // forget, set to north_east (ascending) by default
+    arrowMarker.innerHTML = 'north_east';
+    return arrowMarker;
+  }
+
+  function toggleOrderArrow(arrowMarker) {
+    arrowMarker.innerHTML = (arrowMarker.innerHTML == 'north_east')
+      ? 'south_east'
+      : 'north_east';
+    setExecutionToJson();
+  }
+
+  function updateOrderOptions() {
+    // TODO: Should this function be removed to avoid confusing behavior?
+    var orderOptions = getOrderOptions();
+    var orderDimensions = document.querySelectorAll('[id^=order_id]');
+    for (orderDimension of orderDimensions) {
+      var absent = true;
+      for (orderOption of orderOptions) {
+        if (orderDimension.firstChild.innerHTML == orderOption) {
+          absent = false;
+          break;
+        }
+      }
+      if (absent) {
+        orderDimension.remove();
+      }
+    }
+  }
+
+  function getOrderOptions() {
+    var orderOptions = [];
+    var dimensions = document.querySelectorAll('[id^=dimension_id]');
+    for (dimensionContainer of dimensions) {
+      dimension = dimensionContainer.firstChild;
+      orderOptions.push(dimension.value
+        ? dimension.value
+        : dimension.innerHTML);
+    }
+    var measures = document.querySelectorAll('[id^=measure_id]');
+    for (measureContainer of measures) {
+      measure = measureContainer.firstChild;
+      orderOptions.push(measure.value
+        ? measure.value
+        : measure.innerHTML);
+    }
+    return orderOptions;
+  }
+
+  function addDimension(dimension) {
+    if (!dimension) {
+      return;
+    }
+    addValue(
+      getDimensionOptions,
+      dimension,
+      'dimensions',
+      'dimension_id' + i,
+      true);
+    i++;
+  }
+
+  function addMeasure(measure) {
+    if (!measure) {
+      return;
+    }
+    addValue(
+      getMeasureOptions,
+      measure,
+      'measures',
+      'measure_id' + i,
+      true);
+    i++;
+  }
+
+  function addFilter(filter) {
+    if (!filter) {
+      return;
+    }
+    addValue(
+      getFilterOptions,
+      filter,
+      'filters',
+      'filter_id' + i,
+      true);
+    i++;
+  }
+
+  function addScope(scope) {
+    if (!scope) {
+      return;
+    }
+    addValue(
+      getFilterOptions,
+      scope,
+      'dashboard_filters',
+      'dashboard_filter_id' + i,
+      true);
+    i++
+  }
+
+  function addChart(chart) {
+    if (!chart) {
+      return;
+    }
+    addValue(
+      getChartOptions,
+      chart,
+      'charts',
+      'chart_id' + i,
+      false);
+    i++;
+  }
+
+  function addOrder(order) {
+    if (!order) {
+      return;
+    }
+    var orderSection = document.getElementById('order');
+    var orderContainer = document.createElement('span');
+    let direction;
+    if (order) {
+      if (order.slice(-4) == ' asc') {
+        direction = 'asc';
+        order = order.slice(0, -4);
+      }
+      if (order.slice(-5) == ' desc') {
+        direction = 'desc';
+        order = order.slice(0, -5);
+      }
+      if (order.slice(-2) == '()') {
+        order = order.slice(0, -2);
+      }
+    }
+    addValue(
+      getOrderOptions,
+      order,
+      'order',
+      'order_id' + i,
+      true,
+      direction == 'desc' ? 'south_east' : 'north_east');
+    i++;
+  }
+
+  function appendAddButton(parentSection, userFacingFieldName, onclick) {
+    var fieldAdd = document.createElement('span');
+    fieldAdd.classList.add('config_option');
+    fieldAdd.onclick = onclick;
+    fieldAdd.innerHTML = 'add ' + userFacingFieldName;
+    var addLogo = document.createElement('span');
+    addLogo.classList.add('material-icons');
+    addLogo.innerHTML = 'add_circle';
+    fieldAdd.appendChild(addLogo);
+    parentSection.appendChild(fieldAdd);
+  }
+
+  function updateValue(valueElement, id, optionsGetter, parentId, canBeDeleted, showArrow) {
+    valueElement.id = id + i;
+    i++;
+    var arrowMarker;
+    if (showArrow) {
+      arrowMarker = createArrowMarker();
+      if (ordering.firstChild.innerHTML.slice(-12) === '(descending)') {
+        ordering.firstChild.innerHTML = ordering.firstChild.innerHTML.slice(0, -13);
+        arrowMarker.innerHTML = 'south_east';
+      }
+      if (ordering.firstChild.innerHTML.slice(-11) === '(ascending)') {
+        ordering.firstChild.innerHTML = ordering.firstChild.innerHTML.slice(0, -12);
+        arrowMarker.innerHTML = 'north_east';
+      }
+    }
+    valueElement.classList.add('modifiable_config_value');
+    var valueWithParens = valueElement.firstChild.innerHTML.slice(-1) == ')'
+      ? valueElement.firstChild.innerHTML
+      : valueElement.firstChild.innerHTML + '()';
+    valueElement.onclick =
+      () => showModal(
+              optionsGetter,
+              parentId,
+              id,
+              canBeDeleted,
+              showArrow,
+              valueWithParens,
+              valueElement.id);
+    if (canBeDeleted) {
+      var deleteIcon = createDeleteIcon();
+      deleteIcon.onclick = (event) => {
+        removeValue(valueElement.id);
+        setExecutionToJson();
+        event.stopPropagation();
+      }
+      valueElement.appendChild(deleteIcon);
+    }
+    if (showArrow) {
+      valueElement.appendChild(arrowMarker);
+    }
+  }
+
+  function updateAllConfigValues(config) {
+    updateConfigValues(config, PageOption.Inquiry);
+    updateConfigValues(config, PageOption.Dashboard);
+  }
+
+  function updateConfigValues(config, pageVersion) {
+    if (pageVersion === PageOption.Inquiry) {
+    var title = document.getElementById("title");
+    if (title) {
+      title.contentEditable = true;
+      title.oninput = setExecutionToJson;
+    }
+    var limit = document.getElementById("limit");
+    if (limit) {
+      limit.contentEditable = true;
+      title.oninput = setExecutionToJson;
+    }
+    var dimensionSection = document.getElementById('Dimensions');
+    if (dimensionSection) {
+      appendAddButton(
+        dimensionSection,
+        'dimension',
+        () => {
+          showModal(
+            getDimensionOptions,
+            "dimensions",
+            "dimension_id",
+            true);
+        });
+    }
+    var dimensions = document.querySelectorAll('[id^=dimension_id');
+    for (dimension of dimensions) {
+      updateValue(
+        dimension,
+        'dimension_id',
+        getDimensionOptions,
+        'dimensions',
+        true,
+        false);
+    }
+    var measureSection = document.getElementById('Measures');
+    if (measureSection) {
+      appendAddButton(
+        measureSection,
+        'measure',
+        () => {
+          showModal(
+          getMeasureOptions,
+          "measures",
+          "measure_id",
+          true);
+        });
+    }
+    var measures = document.querySelectorAll('[id^=measure_id');
+    for (measure of measures) {
+      updateValue(
+        measure,
+        'measure_id',
+        getMeasureOptions,
+        'measures',
+        true,
+        false);
+    }
+
+    var filterSection = document.getElementById('Filters');
+    if (filterSection) {
+      appendAddButton(
+        filterSection,
+        'filter',
+        () => {
+          showModal(
+            getFilterOptions,
+            "filters",
+            "filter_id",
+            true);
+        });
+    }
+    var filters = document.querySelectorAll('[id^=filter_id');
+    for (filter of filters) {
+      updateValue(
+        filter,
+        'filter_id',
+        getFilterOptions,
+        'filters',
+        true,
+        false);
+    }
+
+    var orderSection = document.getElementById('Sort');
+    if (orderSection) {
+      appendAddButton(
+        orderSection,
+        'ordering',
+        () => {
+          showModal(
+            getOrderOptions,
+            "order",
+            "order_id",
+            true,
+            true);
+        });
+    }
+    var orderings = document.querySelectorAll('[id^=order_id');
+    for (ordering of orderings) {
+      updateValue(
+        ordering,
+        'order_id',
+        getOrderOptions,
+        'order',
+        true,
+        true);
+    }
+    var charts = document.querySelectorAll('[id^=chart_id');
+    for (chart of charts) {
+      updateValue(
+        chart,
+        'chart_id',
+        getChartOptions,
+        'charts',
+        false,
+        false);
+    }
+    } else {
+      var scopeSection = document.getElementById('Scope');
+      if (scopeSection) {
+        appendAddButton(
+          scopeSection,
+          'scope',
+          () => {
+            showModal(
+              getFilterOptions,
+              "dashboard_filters",
+              "dashboard_filter_id",
+              true);
+          });
+      }
+      var dashboardFilters = document.querySelectorAll('[id^=dashboard_filter_id');
+      for (dashboardFilter of dashboardFilters) {
+        updateValue(
+          dashboardFilter,
+          'dashboard_filter_id',
+          getFilterOptions,
+          'dashboard_filters',
+          true,
+          false);
+      }
+    }
+  }
+
+  function extractConfigContent(component) {
+    return component.firstChild.textContent;
+    // let quoteRegexp = /"/gi;
+    // return component.firstChild.textContent.replace(quoteRegexp, "'");
+  }
+
+  function updateInquiryConfig() {
+    currentConfig.title = document.getElementById('title').firstChild.innerHTML.trim();
+    var dimensions = document.querySelectorAll('[id^=dimension_id]');
+    currentConfig.dimensions = [];
+    for (dimensionContainer of dimensions) {
+      const dimension = extractConfigContent(dimensionContainer);
+
+      currentConfig.dimensions.push(
+        dimension.slice(-1) !== ')'
+          ? dimension + '()'
+          : dimension);
+    }
+    var measures = document.querySelectorAll('[id^=measure_id]');
+    currentConfig.measures = [];
+    for (measureContainer of measures) {
+      const measure = extractConfigContent(measureContainer);
+      currentConfig.measures.push(
+        measure.slice(-1) !== ')'
+          ? measure + '()'
+          : measure);
+    }
+    var filters = document.querySelectorAll('[id^=filter_id]');
+    currentConfig.filters = [];
+    for (filterContainer of filters) {
+      const filter = extractConfigContent(filterContainer);
+
+      currentConfig.filters.push(
+        filter.slice(-1) !== ')'
+          ? filter + '()'
+          : filter);
+    }
+    currentConfig.order = [];
+    var orders = document.querySelectorAll('[id^=order_id]');
+    for (order of orders) {
+      let orderDimension = extractConfigContent(order);
+      // skip item 1 - this is the delete icon
+      var orderDirection = order.childNodes.item(2).textContent == 'south_east' ? 'desc' : 'asc';
+      if (orderDimension) {
+        if (orderDimension.slice(-1) !== ')') {
+          orderDimension = orderDimension + '()';
+        }
+        currentConfig.order.push(orderDimension + ' ' + orderDirection);
+      }
+    }
+    // Number(x) returns NaN if it can't return a number, and in
+    // js NaN !== NaN (for some reason)
+    numberLimit = Number(document.getElementById('limit').textContent);
+    currentConfig.limit = numberLimit === numberLimit ? numberLimit : -1;
+    var charts = document.querySelectorAll('[id^=chart_id]');
+    for (chartContainer of charts) {
+      const chart = extractConfigContent(chartContainer);
+      currentConfig.chartType = chart.slice(-1) !== ')'
+         ? chart + '()'
+         : chart;
+    }
+  }
+
+  function updateAndExecuteConfig() {
+    updateInquiryConfig();
+    executeInquiryConfig();
+  }
+  // Initializing the modifiable config
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  if (!(urlParams.get('modifiable') !== 'false')) {
+    document.getElementById('modifiableConfig').innerHTML = '';
+  } else {
+    updateAllConfigValues(currentConfig);
+  }
+
+  class DashboardChart extends HTMLElement {
+    constructor() {
+      super();
+    }
+    static get observedAttributes() {
+      return [
+      'height',
+      'width',
+      'modifiable',
+      'dimensions',
+      'measures',
+      'filters',
+      'order',
+      'limit',
+      'chart',
+      'dataframe',
+      'natural_language_request'
+    ];
+  }
+
+    attributeChangedCallback(name, old, newValue) {
+      this[name] = newValue;
+      this._render()
+    }
+    connectedCallback() {
+      this._render();
+    }
+    _render() {
+    }
+  }
+  customElements.define('dashboard-chart', DashboardChart);
+
+  let lastQueryScope = [];
+
+  // < - dashboard cut out line. do not modify - >
+  let tmpDashboardMappings = {dashboardCharts: [
+{title: 'default', dashboardChartContents: [{height: 1, width: 6, id: 'dashboard_chart_title', content: "<h2>Select a dashboard on the left</h2>"}]},
+]};
+  // < - dashboard cut out line. do not modify - >
+  let dashboardMappings = tmpDashboardMappings.dashboardCharts;
+  let currentDashboard;
+  if (tmpDashboardMappings.defaultQuery) {
+    document.getElementById('dashboard_user_command').textContent = tmpDashboardMappings.defaultQuery;
+  }
+  if (tmpDashboardMappings.defaultScope) {
+    document.getElementById('dashboard_filters').innerHTML = '';
+    for (scope of tmpDashboardMappings.defaultScope) {
+      addScope(scope);
+    }
+  }
+  function updateToDashboard(value) {
+    if (value && value !== 'dashboard') {
+      document.getElementById('dashboard_selector').innerHTML = value;
+    }
+    for (dashboardMapping of dashboardMappings) {
+      if (dashboardMapping.title === value) {
+        currentDashboard = dashboardMapping.dashboardChartContents;
+        console.log('Current dashboard:', currentDashboard);
+      }
+    }
+    setupDashboardCharts();
+    updateAndExecuteDashboardCharts();
+  }
+
+  function removeTrailingComma(input) {
+    if (input.slice(-1) == ",") {
+      return input.slice(0, -1);
+    }
+    return input;
+  }
+
+  function removeTrailingCommas(input) {
+    if (input.slice(-2) == ",,") {
+      return input.slice(0, -2);
+    }
+    return input;
+  }
+
+  function setupDashboardCharts() {
+    const parentContainer = document.getElementById('container_dashboard_chart');
+    parentContainer.innerHTML = '';
+    for (chartDescription of currentDashboard) {
+      let chart = document.createElement('dashboard-chart');
+      chart.id = chartDescription.id;
+      parentContainer.appendChild(chart);
+      chart.setAttribute('height', chartDescription.height);
+      chart.setAttribute('width', chartDescription.width);
+      chart.className = 'kaleidoscope_shard';
+      chart.className += ' kaleidoscope_shard_' + chartDescription.width + '_by_' + chartDescription.height;
+      if (chartDescription.content) {
+        chart.innerHTML = chartDescription.content;
+      } else {
+        chart.innerHTML = 'Loading...';
+      }
+      chart.setAttribute('modifiable', '' + chartDescription.modifiable);
+      if (chartDescription.modifiable) {
+        chart.setAttribute('title', chartDescription.title);
+        let dimensions = '';
+        if (chartDescription.dimensions) {
+          for (dimension of chartDescription.dimensions) {
+            dimensions += dimension + ',,';
+          }
+        }
+        chart.setAttribute('dimensions', removeTrailingCommas(dimensions));
+        let measures = '';
+        if (chartDescription.measures) {
+          for (measure of chartDescription.measures) {
+            measures += measure + ',,';
+          }
+        }
+        chart.setAttribute('measures', removeTrailingCommas(measures));
+        let filters = '';
+        if (chartDescription.filters) {
+          for (filter of chartDescription.filters) {
+            filters += filter + ',,';
+          }
+        }
+        chart.setAttribute('filters', removeTrailingCommas(filters));
+        let orders = '';
+        if (chartDescription.order) {
+          for (order of chartDescription.order) {
+            orders += order + ',,';
+          }
+        }
+        chart.setAttribute('order', removeTrailingCommas(orders));
+        chart.setAttribute('limit', chartDescription.limit);
+        chart.setAttribute('chart', chartDescription.chartType);
+        chart.setAttribute('natural_language_request',
+                           chartDescription.natural_language_request || 'Deep dive from dashboard');
+        console.log('>>>', chartDescription);
+        // chart.setAttribute('chart_arguments', chartDescription.chart_type_predicate_call.arguments)
+        chart.onclick = () => deepDive(chart);
+      }
+    }
+  }
+
+  function deepDive(chart) {
+    setView(PageOption.Inquiry);
+    const query = {
+      dimensions: chart.dimensions.split(",,"),
+      measures: chart.measures.split(",,"),
+      filters: chart.filters.split(",,").concat(lastQueryScope),
+      order: chart.order.split(",,"),
+      title: chart.title,
+      limit: chart.limit,
+      chartType: chart.chart,
+      exampleQuery: chart.natural_language_request,
+    };
+    updateInquiryToQuery(query);
+    chartType = chart.chart.split('(')[0];
+    chartArguments = chart_call_to_args.get(chart.chart);
+    renderDataframe('inquiry_report_dataframe_div', JSON.parse(chart.dataframe), chart.title, 1000, 620, PageOption.Inquiry, currentConfig);
+    setExecutionToJson();
+  }
+
+  function updateAndExecuteDashboardCharts() {
+    var dashboardCharts = document.querySelectorAll('[id^=dashboard_chart]');
+    for (dashboardChart of dashboardCharts) {
+      if (dashboardChart.modifiable == "true") {
+        var chartConfig = {};
+        chartConfig.title = dashboardChart.title;
+        chartConfig.dimensions = dashboardChart.dimensions.split(",,");
+        chartConfig.measures = dashboardChart.measures.split(",,");
+        chartConfig.order = dashboardChart.order.split(",,");
+        chartConfig.limit = Number(dashboardChart.limit);
+        chartConfig.chartType = dashboardChart.chart;
+        chartConfig.filters = dashboardChart.filters.split(",,")
+          .filter(scope => scope != '')
+          .concat(getDashboardScope());
+        lastQueryScope = getDashboardScope();
+        var chartWidth = convertToPixels(dashboardChart.width);
+        var chartHeight = convertToPixels(dashboardChart.height);
+
+        executeConfig(chartConfig, dashboardChart.id, 'dashboard_report_div', chartWidth, chartHeight);
+      }
+    }
+  }
+
+  function convertToPixels(dimension) {
+    return 160 * dimension - 30;
+  }
+
+  function getDashboardScope() {
+    let scopeContainers = document.querySelectorAll('[id^=dashboard_filter_id]');
+    let scopes = [];
+    for (scopeContainer of scopeContainers) {
+      scope = scopeContainer.firstChild;
+      scopes.push(
+        scope.innerHTML.slice(-1) !== ')'
+          ? scope.innerHTML + '()'
+          : scope.innerHTML);
+    }
+    return scopes;
+  }
+
+  </script>
+
+
+  <div class="chart_pane">
+    <div class="pane_header" style="display:none"> <!-- Thanks Captain Obvious! -->
+      Analysis
+    </div>
+    <div class="analysis">
+      <div id="report_glass_pane" class="glass_pane" style="justify-content: flex-start;">
+        <div class="timer">
+          <div>
+            Running the analysis by executing the query.
+          </div>
+          <div id="inquiry_query_timer">
+          </div>
+        </div>
+      </div>
+      <div id="inquiry_report_div" class="inquiry_component">
+        <div id="inquiry_report_dataframe_div">Loading chart...</div>
+      </div>
+      <div id="dashboard_report_div" class="dashboard_component">
+        <div class="kaleidoscope" id="container_dashboard_chart">
+          <!-- Will be filled out by setupDashboardCharts -->
+        </div>
+      </div>
+    </div>
+    <div class="button_bar inquiry_component" id="inquiry_export_button_bar">
+      <div class="button" onclick="downloadCsv()"><span class="material-icons" style="font-size: 1.2em">download</span>  DOWNLOAD CSV </div>
+    </div>
+  </div>
+</div>
+<script>
+  // < - proactively lucky cut. do not modify. - >
+  // Not feeling too lucky.
+  // < - proactively lucky cut. do not modify. - >
+  /***************
+   *  Script for handling changing between Inquiry and Dashboard views
+   */
+  var currentPageVersion = PageOption.Inquiry;
+
+  function initializeViewButtons() {
+    // Default to Dashboard mode if a dashboard is present
+    currentPageVersion = intelligenceConfig.dashboard ? PageOption.Dashboard : PageOption.Inquiry;
+    // Allow user to overwrite with view param if desired
+    if (urlParams.get('view') === 'inquiry') {
+      currentPageVersion = PageOption.Inquiry;
+    }
+    updateView();
+  }
+
+  function updateView() {
+    const body = document.body;
+    switch (currentPageVersion) {
+      case PageOption.Inquiry:
+        body.classList.remove('dashboard_mode');
+        body.classList.add('inquiry_mode');
+        return;
+      case PageOption.Dashboard:
+        body.classList.remove('inquiry_mode');
+        body.classList.add('dashboard_mode');
+        return;
+    }
+  }
+
+  function setView(updatedView) {
+    currentPageVersion = updatedView;
+    updateView();
+  }
+
+  if (!intelligenceConfig.dashboard) {
+    document.getElementById('button_container').innerHTML = '';
+    document.getElementById('dashboard_config').innerHTML = '';
+    document.getElementById('dashboard_report_div').innerHTML = '';
+    document.body.classList.add('inquiry_mode');
+  } else {
+    initializeViewButtons();
+    updateToDashboard(dashboardMappings[0].title);
+  }
+
+  if (exampleQuery && Object.keys(exampleQuery).length > 0) {
+    updateInquiryToQuery(exampleQuery)
+    updateAndExecuteConfig();
+  }
+</script>
+</body>
+</html>

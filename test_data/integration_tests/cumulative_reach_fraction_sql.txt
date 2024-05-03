@@ -1,0 +1,87 @@
+{
+  "config": "examples/reach/reach.json",
+  "command": "sql",
+  "request": {
+    "title": "Cumulative reached fraction for July 2024.",
+    "measures": [
+      "ReachedFraction()"
+    ],
+    "dimensions": [
+      "CumulativeDate(end_date: \"2024-07-31\")"
+    ],
+    "filters": [
+      "DateRange(date_from: \"2024-07-01\", date_to: \"2024-07-31\")"
+    ],
+    "chartType": "LineChart()",
+    "order": [
+      "CumulativeDate(end_date: \"2024-07-31\") asc"
+    ],
+    "limit": -1,
+    "exampleQuery": "Cumuative reached fraction for July 2024, please."
+  },
+  "comment": "This is a flawed program, resulting in error because PopulationDate has no date. Need to upgrade LogicLM to make this work."
+}
+-----
+ATTACH DATABASE 'examples/reach/synthetic_logs.sqlite' AS db;
+
+WITH t_4_GetPopulation AS (SELECT
+  db_Event.age AS age,
+  db_Event.gender AS gender,
+  ((COUNT(DISTINCT db_Event.person)) * (1000)) AS logica_value
+FROM
+  db.Event AS db_Event
+GROUP BY db_Event.age, db_Event.gender),
+t_3_PopulationData AS (SELECT
+  JSON_OBJECT('age', GetPopulation.age, 'gender', GetPopulation.gender, 'population', GetPopulation.logica_value) AS col0
+FROM
+  t_4_GetPopulation AS GetPopulation),
+t_2_PopulationTileStep1 AS (SELECT
+  SUM(JSON_EXTRACT(PopulationData.col0, "$.population")) AS population,
+  SUM(0) AS reach
+FROM
+  t_3_PopulationData AS PopulationData),
+t_5_DimensionsDomain AS (SELECT
+  DATE(t_7_db_Event.date, x_58.value || ' days') AS cumulativedate_631405
+FROM
+  db.Event AS t_7_db_Event, JSON_EACH((select json_group_array(n) from (with recursive t as(select 0 as n union all select n + 1 as n from t where n + 1 < ((CAST(JULIANDAY('2024-07-31') - JULIANDAY(t_7_db_Event.date) AS INT64)) + (1))) select n from t) where n < ((CAST(JULIANDAY('2024-07-31') - JULIANDAY(t_7_db_Event.date) AS INT64)) + (1)))) as x_58
+WHERE
+  (t_7_db_Event.date >= '2024-07-01') AND
+  (t_7_db_Event.date <= '2024-07-31')
+GROUP BY DATE(t_7_db_Event.date, x_58.value || ' days')),
+t_9_ReachTileStep1 AS (SELECT
+  SUM(0) AS population,
+  ((1000) * (COUNT(DISTINCT t_14_db_Event.person))) AS reach,
+  DATE(t_14_db_Event.date, x_103.value || ' days') AS cumulativedate_631405
+FROM
+  db.Event AS t_14_db_Event, JSON_EACH((select json_group_array(n) from (with recursive t as(select 0 as n union all select n + 1 as n from t where n + 1 < ((CAST(JULIANDAY('2024-07-31') - JULIANDAY(t_14_db_Event.date) AS INT64)) + (1))) select n from t) where n < ((CAST(JULIANDAY('2024-07-31') - JULIANDAY(t_14_db_Event.date) AS INT64)) + (1)))) as x_103
+WHERE
+  (t_14_db_Event.date >= '2024-07-01') AND
+  (t_14_db_Event.date <= '2024-07-31')
+GROUP BY DATE(t_14_db_Event.date, x_103.value || ' days')),
+t_1_ReachAndPopulation AS (SELECT * FROM (
+  
+    SELECT
+      JSON_OBJECT('cumulativedate_631405', DimensionsDomain.cumulativedate_631405, 'population', PopulationTileStep1.population, 'reach', PopulationTileStep1.reach) AS col0
+    FROM
+      t_2_PopulationTileStep1 AS PopulationTileStep1, t_5_DimensionsDomain AS DimensionsDomain
+   UNION ALL
+  
+    SELECT
+      JSON_OBJECT('cumulativedate_631405', ReachTileStep1.cumulativedate_631405, 'population', ReachTileStep1.population, 'reach', ReachTileStep1.reach) AS col0
+    FROM
+      t_9_ReachTileStep1 AS ReachTileStep1, t_5_DimensionsDomain AS t_8_DimensionsDomain
+    WHERE
+      (t_8_DimensionsDomain.cumulativedate_631405 = ReachTileStep1.cumulativedate_631405)
+  
+) AS UNUSED_TABLE_NAME  ),
+t_0_ConsolidatingReachAndPopulation AS (SELECT
+  ((SUM(JSON_EXTRACT(ReachAndPopulation.col0, "$.reach"))) / (CAST(SUM(JSON_EXTRACT(ReachAndPopulation.col0, "$.population")) AS FLOAT64))) AS reachedfraction_309073,
+  JSON_EXTRACT(ReachAndPopulation.col0, "$.cumulativedate_631405") AS cumulativedate_631405
+FROM
+  t_1_ReachAndPopulation AS ReachAndPopulation
+GROUP BY JSON_EXTRACT(ReachAndPopulation.col0, "$.cumulativedate_631405"))
+SELECT
+  ConsolidatingReachAndPopulation.cumulativedate_631405 AS `CumulativeDate<end_date: '2024-07-31'>`,
+  ConsolidatingReachAndPopulation.reachedfraction_309073 AS `ReachedFraction<>`
+FROM
+  t_0_ConsolidatingReachAndPopulation AS ConsolidatingReachAndPopulation ORDER BY `CumulativeDate<end_date: '2024-07-31'>` asc;

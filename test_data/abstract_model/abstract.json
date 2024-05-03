@@ -1,0 +1,84 @@
+{
+    "name": "USA baby names",
+    "fact_tables": [
+      {
+        "fact_table": "BabyNames"
+      }, {
+        "fact_table": "FactTable2",
+        "ephemeral_dimensions": ["Dim4"],
+        "hostile_dimensions": ["Dim5"]
+      }, {
+        "fact_table": "ConsolidatedFactTable1",
+        "consolidation": {
+            "consolidated_fact_table": "FactTable2",
+            "projected_dimensions": [{
+                "name": "dim_1",
+                "dimension": "Dim1()" 
+              }, {
+                "name": "dim_2",
+                "dimension": "Dim2()"
+              }
+            ],
+            "consolidated_dimensions": [{
+                "name": "dim_3",
+                "dimension": "Dim3()"
+            }]
+        }
+      }, {
+        "fact_table": "ConsolidatedFactTable2",
+        "consolidation": {
+            "consolidated_fact_table": "ConsolidatedFactTable1"
+        }
+      }, {
+        "fact_table": "NumberAndUnique",
+        "union": {
+            "fact_tables": ["NumberTable", "UniqueTable"]
+        } 
+      }, {
+        "fact_table": "NumberTable",
+        "consolidation": {
+            "consolidated_fact_table": "BabyNames",
+            "consolidated_dimensions": [{
+                "name": "num_babies",
+                "dimension": "NumberOfBabies()"
+            }, {
+                "name": "uniques",
+                "dimension": "Zero()"
+            }]
+        }
+      }, {
+        "fact_table": "UniqueTable",
+        "consolidation": {
+            "consolidated_fact_table": "BabyNames",
+            "consolidated_dimensions": [{
+                "name": "num_babies",
+                "dimension": "Zero()"
+            }, {
+                "name": "uniques",
+                "dimension": "UniqueNamesCount()"
+            }]
+        }
+      }],
+    "default_fact_table": "BabyNames",
+    "measures": [
+        {"aggregating_function": {"predicate_name": "NumberOfBabies"}},
+        {"aggregating_function": {"predicate_name": "UniqueNamesCount"}},
+        {"aggregating_function": {"predicate_name": "MeasureOverConsolidated"},
+         "fact_table": "ConsolidatedFactTable1"},
+        {"aggregating_function": {"predicate_name": "Fact2Measure"},
+         "fact_table": "FactTable2"},
+        {"aggregating_function": {"predicate_name": "Metameasure1"},
+         "fact_table": "NumberAndUnique"}],
+    "dimensions": [
+        {"function": {"predicate_name": "Name"}},
+        {"function": {"predicate_name": "State"}},
+        {"function": {"predicate_name": "Year"}},
+        {"function": {"predicate_name": "Dim4"}},
+        {"function": {"predicate_name": "Dim5"}}],
+    "filters": [{"predicate": {"predicate_name": "StateIn",
+                               "parameters": [{"field_name": "states"}]}},
+                {"predicate": {"predicate_name": "Filter2",
+                               "parameters": [{"field_name": "f2"}]},
+                 "depends_on_dimensions": ["Dim4"]}],
+    "logica_program": "examples/baby_names.ydg"
+}

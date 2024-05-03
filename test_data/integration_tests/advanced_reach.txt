@@ -1,0 +1,47 @@
+{
+  "config": "examples/reach/reach.json",
+  "command": "logic_program",
+  "request": {
+    "measures": [
+      "ReachedFraction()"
+    ],
+    "dimensions": [
+      "EventDate()",
+      "Age()"
+    ],
+    "filters": [
+      "DateRange(date_from: \"2025-09-15\", date_to: \"2024-10-15\")"
+    ]
+  }
+}
+-----
+# Computing all the measures.
+ConsolidatingReachAndPopulation(reachedfraction_309073? Aggr= ReachedFraction(fact), eventdate_350091: fact.eventdate_350091, age_778101: fact.age_778101) distinct :- 
+  ReachAndPopulation(fact);
+
+ReachAndPopulation(fact) :- 
+  (PopulationTile(fact)) |
+  (ReachTile(fact));
+
+PopulationTileStep1(population? Aggr= Population(fact), reach? Aggr= Zero(fact), age_778101: Age(fact)) distinct :- 
+  PopulationData(fact);
+
+PopulationTile({eventdate_350091: eventdate_350091, age_778101: age_778101, population: population, reach: reach}) :- 
+  PopulationTileStep1(population:, reach:, age_778101:),
+  DimensionsDomain(eventdate_350091:, age_778101:);
+
+ReachTileStep1(population? Aggr= Zero(fact), reach? Aggr= Reach(fact), eventdate_350091: EventDate(fact), age_778101: Age(fact)) distinct :- 
+  Event(fact),
+  DateRange(fact, date_from: "2025-09-15", date_to: "2024-10-15");
+
+ReachTile({eventdate_350091: eventdate_350091, age_778101: age_778101, population: population, reach: reach}) :- 
+  ReachTileStep1(population:, reach:, eventdate_350091:, age_778101:),
+  DimensionsDomain(eventdate_350091:, age_778101:);
+
+DimensionsDomain(eventdate_350091: EventDate(fact), age_778101: Age(fact)) distinct :- 
+  DateRange(fact, date_from: "2025-09-15", date_to: "2024-10-15"),
+  Event(fact);
+
+# Assembling all the measures.
+Report(`EventDate<>`: eventdate_350091, `Age<>`: age_778101, `ReachedFraction<>`: reachedfraction_309073) :- 
+  ConsolidatingReachAndPopulation(reachedfraction_309073:, eventdate_350091:, age_778101:)

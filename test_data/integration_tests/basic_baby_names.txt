@@ -1,0 +1,34 @@
+{
+  "config": "examples/baby_names/baby_names.json",
+  "command": "logic_program",
+  "request": {
+    "title": "Top 4 Popular Baby Names in East Coast.",
+    "measures": [
+      "NumberOfBabies()"
+    ],
+    "dimensions": [
+      "Name()"
+    ],
+    "filters": [
+      "StateIn(states: [\"MA\", \"NY\", \"NJ\", \"CT\"])"
+    ],
+    "chartType": "BarChart()",
+    "order": [
+      "NumberOfBabies() desc"
+    ],
+    "limit": 4
+  }
+}
+-----
+# Computing all the measures.
+ConsolidatingBabyNames(numberofbabies_556283? Aggr= NumberOfBabies(fact), name_361814: Name(fact)) distinct :- 
+  BabyNames(fact),
+  StateIn(fact, states: ["MA", "NY", "NJ", "CT"]);
+
+@Limit("Report", 4);
+
+@OrderBy("Report", "`NumberOfBabies<>` desc");
+
+# Assembling all the measures.
+Report(`Name<>`: name_361814, `NumberOfBabies<>`: numberofbabies_556283) :- 
+  ConsolidatingBabyNames(numberofbabies_556283:, name_361814:)

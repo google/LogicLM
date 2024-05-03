@@ -1,0 +1,35 @@
+{
+  "config": "examples/baby_names/baby_names.json",
+  "command": "sql",
+  "request": {
+    "title": "Top 4 Popular Baby Names in East Coast.",
+    "measures": [
+      "NumberOfBabies()"
+    ],
+    "dimensions": [
+      "Name()"
+    ],
+    "filters": [
+      "StateIn(states: [\"MA\", \"NY\", \"NJ\", \"CT\"])"
+    ],
+    "chartType": "BarChart()",
+    "order": [
+      "NumberOfBabies() desc"
+    ],
+    "limit": 4
+  }
+}
+-----
+WITH t_0_ConsolidatingBabyNames AS (SELECT
+  SUM(bigquerypublicdata_usa_names_usa_1910_current.number) AS numberofbabies_556283,
+  bigquerypublicdata_usa_names_usa_1910_current.name AS name_361814
+FROM
+  `bigquery-public-data.usa_names.usa_1910_current` AS bigquerypublicdata_usa_names_usa_1910_current
+WHERE
+  (bigquerypublicdata_usa_names_usa_1910_current.state IN UNNEST(ARRAY["MA", "NY", "NJ", "CT"]))
+GROUP BY name_361814)
+SELECT
+  ConsolidatingBabyNames.name_361814 AS `Name<>`,
+  ConsolidatingBabyNames.numberofbabies_556283 AS `NumberOfBabies<>`
+FROM
+  t_0_ConsolidatingBabyNames AS ConsolidatingBabyNames ORDER BY `NumberOfBabies<>` desc LIMIT 4;

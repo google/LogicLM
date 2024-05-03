@@ -1,0 +1,25 @@
+{
+  "config": "examples/reach/reach.json",
+  "command": "logic_program",
+  "request": {
+    "measures": [
+      "Reach()"
+    ],
+    "dimensions": [
+      "CumulativeDate(end_date: \"2025-10-15\")",
+      "Age()"
+    ],
+    "filters": [
+      "DateRange(date_from: \"2025-09-15\", date_to: \"2024-10-15\")"
+    ]
+  }
+}
+-----
+# Computing all the measures.
+ConsolidatingEvent(reach_299895? Aggr= Reach(fact), cumulativedate_912918: CumulativeDate(fact, end_date: "2025-10-15"), age_778101: Age(fact)) distinct :- 
+  Event(fact),
+  DateRange(fact, date_from: "2025-09-15", date_to: "2024-10-15");
+
+# Assembling all the measures.
+Report(`CumulativeDate<end_date: '2025-10-15'>`: cumulativedate_912918, `Age<>`: age_778101, `Reach<>`: reach_299895) :- 
+  ConsolidatingEvent(reach_299895:, cumulativedate_912918:, age_778101:)
