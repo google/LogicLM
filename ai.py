@@ -19,6 +19,7 @@ import sys
 
 try:
   import google.generativeai as genai
+  from vertexai import generative_models
 except:
   pass
 
@@ -86,7 +87,7 @@ class GoogleGenAI(AI):
     if self.configured_api_key != self.api_key:
       genai.configure(api_key=self.api_key)
       self.configured_api_key = self.api_key
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
+    model = generative_models.GenerativeModel('gemini-1.5-flash-preview-0514')
     content = model.generate_content(
       prompt,
       generation_config=dict(
@@ -102,7 +103,7 @@ class OpenAI(AI):
   def __call__(self, prompt):
     client = openai.OpenAI(api_key=self.api_key)
     response = client.chat.completions.create(
-      model="gpt-4-1106-preview",
+      model="gpt-4o",
       messages=[
         {
           "role": "user",
