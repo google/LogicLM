@@ -1,0 +1,222 @@
+{
+    "name": "Student Club Database",
+    "dashboard": {},
+    "logica_program": "examples/spider/club_1/club_1.l",
+    "fact_tables": [
+      {
+        "fact_table": "Student"
+      },
+      {
+        "fact_table": "Club"
+      },
+      {
+        "fact_table": "Member_of_club"
+      }
+    ],
+    "default_fact_table": "Student",
+    "measures": [
+      {
+        "aggregating_function": {
+          "predicate_name": "CountStudents"
+        }
+      },
+      {
+        "aggregating_function": {
+          "predicate_name": "CountClubs"
+        }
+      },
+      {
+        "aggregating_function": {
+          "predicate_name": "AverageAge"
+        }
+      },
+      {
+        "aggregating_function": {
+          "predicate_name": "CountDistinctPositions"
+        }
+      },
+      {
+        "aggregating_function": {
+          "predicate_name": "NumRecords"
+        }
+      }
+    ],
+    "dimensions": [
+      {
+        "function": {
+          "predicate_name": "StudentFirstName"
+        }
+      },
+      {
+        "function": {
+          "predicate_name": "StudentLastName"
+        }
+      },
+      {
+        "function": {
+          "predicate_name": "ClubName"
+        }
+      },
+      {
+        "function": {
+          "predicate_name": "ClubLocation"
+        }
+      },
+      {
+        "function": {
+          "predicate_name": "ClubDescription"
+        }
+      },
+      {
+        "function": {
+          "predicate_name": "Position"
+        }
+      }
+    ],
+    "filters": [
+      {
+        "predicate": {
+          "predicate_name": "ClubNameIs",
+          "parameters": [
+            {
+              "field_name": "club_name"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "StudentNameIs",
+          "parameters": [
+            {
+              "field_name": "first_name"
+            },
+            {
+              "field_name": "last_name"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "AgeAbove",
+          "parameters": [
+            {
+              "field_name": "age"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "AgeBelow",
+          "parameters": [
+            {
+              "field_name": "age"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "GenderIs",
+          "parameters": [
+            {
+              "field_name": "sex"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "MajorIs",
+          "parameters": [
+            {
+              "field_name": "major"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "AdvisorIs",
+          "parameters": [
+            {
+              "field_name": "advisor"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "CityCodeIs",
+          "parameters": [
+            {
+              "field_name": "city_code"
+            }
+          ]
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "PositionIs",
+          "parameters": [
+            {
+              "field_name": "position"
+            }
+          ]
+        }
+      }
+    ],
+    "chart_types": [
+      {
+        "predicate": {
+          "predicate_name": "Table",
+          "parameters": []
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "BarChart",
+          "parameters": []
+        }
+      },
+      {
+        "predicate": {
+          "predicate_name": "PieChart",
+          "parameters": []
+        }
+      }
+    ],
+   "suffix_lines": [
+      "You must reply with json only.",
+      "When asked for top do not forget to sort, like [\"CountStudents() desc\"]",
+      "Whenever you have no measures just use CountStundents.",
+      "",
+      "Example request: How many clubs are there?",
+      "Example response: {\"title\": \"Total number of clubs\", \"measures\": [\"CountClubs()\"], \"dimensions\": [], \"filters\": [], \"chartType\": \"Table()\", \"limit\": -1}",
+      "",
+      "Example request: What are the names of all clubs?",
+      "Example response: {\"title\": \"List of all clubs\", \"measures\": [], \"dimensions\": [\"ClubName()\"], \"filters\": [], \"chartType\": \"Table()\", \"limit\": -1}",
+      "",
+      "Example request: Find the last names of members of the club Bootup Baltimore.",
+      "Example response: {\"title\": \"Members of Bootup Baltimore\", \"measures\": [], \"dimensions\": [\"StudentLastName()\"], \"filters\": [\"ClubNameIs(club_name: \\\"Bootup Baltimore\\\")\"], \"chartType\": \"Table()\", \"limit\": -1}",
+      "",
+      "Example request: How many members does the Tennis Club have?",
+      "Example response: {\"title\": \"Number of members in Tennis Club\", \"measures\": [\"CountStudents()\"], \"filters\": [\"ClubNameIs(club_name: \\\"Tennis Club\\\")\"], \"chartType\": \"Table()\", \"limit\": -1}",
+      "",
+      "Example request: Find all female members of club Bootup Baltimore with their first and last names.",
+      "Example response: {\"title\": \"Female members of Bootup Baltimore\", \"measures\": [], \"dimensions\": [\"StudentFirstName()\", \"StudentLastName()\"], \"filters\": [\"ClubNameIs(club_name: \\\"Bootup Baltimore\\\")\", \"GenderIs(sex: \\\"F\\\")\"], \"chartType\": \"Table()\", \"limit\": -1}",
+      "",
+      "Example request: What is the description of the Tennis Club?",
+      "Example response: {\"title\": \"Description of Tennis Club\", \"measures\": [], \"dimensions\": [\"ClubDescription()\"], \"filters\": [\"ClubNameIs(club_name: \\\"Tennis Club\\\")\"], \"chartType\": \"Table()\", \"limit\": -1}",
+      "",
+      "Example request: Find the first and last name of the president of Bootup Baltimore.",
+      "Example response: {\"title\": \"President of Bootup Baltimore\", \"measures\": [], \"dimensions\": [\"StudentFirstName()\", \"StudentLastName()\"], \"filters\": [\"ClubNameIs(club_name: \\\"Bootup Baltimore\\\")\", \"PositionIs(position: \\\"President\\\")\"], \"chartType\": \"Table()\", \"limit\": -1}",
+      "",
+      "Example request: What is the average age of members in Bootup Baltimore?",
+      "Example response: {\"title\": \"Average age of Bootup Baltimore members\", \"measures\": [\"AverageAge()\"], \"filters\": [\"ClubNameIs(club_name: \\\"Bootup Baltimore\\\")\"], \"chartType\": \"Table()\", \"limit\": -1}"
+    ]
+  }
+  
+  

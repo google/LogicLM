@@ -128,6 +128,10 @@ class LogicLMServerHeart:
     return json_request
   
   def RunJson(self, json_request):
+    if len(json_request['measures']) == 0:
+      # TODO: We should add NumRecords by default or
+      # allow requests without measures.
+      json_request['measures'] = ['NumRecords()']
     if len(json_request['dimensions']) < 1 or len(json_request['measures']) < 1:
       json_request['nice_error'] = '<i>Please specify at least one measure and at least one dimension.</i>'
       return 'Fail(true)', "select 'fail'", []
