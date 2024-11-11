@@ -1,0 +1,34 @@
+{
+  "config": "examples/starfleet/starfleet.l",
+  "command": "show_prompt"
+}
+-----
+Please write configuration for an OLAP request.
+Available measures are:
+* MissionCount()
+
+Available dimensions are:
+* MissionName()
+* PilotName()
+* OriginPlanetName()
+* DestinationPlanetName()
+
+Available filters are:
+* MissionIsToPlanets(planet_names:)
+* PieChart()
+* LineChart()
+* BarChart()
+* StackedBarChart()
+* Table()
+* TotalsCard()
+* VennDiagram()
+* GeoMap()
+* QueryOnly()
+Config is JSON object with fields title, measures, dimensions, filters, order, limit and chartType.
+Always use all the fields. For example if you do not have filters, then pass it as empty list.
+
+Use Table() chart type by default.
+Do not forget to use parameter names, e.g. MissionIsToPlanets(planet_names: ['Mars'])
+Good luck!
+
+Write me JSON for this request: __USER_REQUEST__

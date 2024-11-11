@@ -26,13 +26,20 @@ from logica.compiler import rule_translate
 from logica.tools import avatar
 from logica.parser_py import parse
 
+
+def GetPredicateCallsField(request, field_name):
+  predicate_calls = request.get(field_name, [])
+  return [c.replace("'", '"')
+          for c in predicate_calls]
+
+
 class Olap:
   def __init__(self, config, request):
     jsonschema.validate(config, schema.OlapConfig())
     self.config = config
     self.request = request
     self.called_predicate_cache = {}
-    self.measures = request.get('measures', [])
+    self.measures = GetPredicateCallsField(request, 'measures')
     default_fact_table = config['default_fact_table']
     self.fact_table_of_measure = {
       m['aggregating_function']['predicate_name']: m.get('fact_table',
@@ -40,10 +47,12 @@ class Olap:
       for m in self.config['measures']}
     
     self.default_fact_table = default_fact_table
-    self.dimensions = request.get('dimensions', [])
-    self.filters = request.get('filters', [])
+    self.dimensions = GetPredicateCallsField(request, 'dimensions')
+    self.filters = GetPredicateCallsField(request, 'filters')
     self.limit = request.get('limit', -1)
-    self.order = request.get('order', [])
+    if self.limit is None:
+      self.limit = -1
+    self.order = GetPredicateCallsField(request, 'order')
     self.direct_dependency = self.BuildDirectFactualDependencies()
     self.fact_dependencies = self.BuildFactualDependencies()
     self.fact_table_to_measures = self.BuildFactTableToMeasures()
@@ -56,6 +65,12 @@ class Olap:
     self.relevant_fact_tables = self.BuildListOfAllNeededTables()
     self.table_to_ephemeral_dimensions = self.BuildEphemeralDimensions()
     self.filter_to_needed_dimensions = self.BuildFilterToNeededDimensions()
+    self.dialect = config.get('dialect', 'psql')
+
+  def QuotedField(self, field):
+    if self.dialect == 'duckdb':
+      return '"%s"' % field
+    return "`%s`" % field
 
   def DimensionsDomainRule(self) -> avatar.Rule:
     dimensions_domain_predicate = avatar.Predicate('DimensionsDomain')
@@ -168,7 +183,7 @@ class Olap:
     Report = avatar.Predicate('Report')
     fact = avatar.Variable('fact')
 
-    head = +Report(**{f'`{measure}`': avatar.Predicate(measure)(fact)
+    head = +Report(**{self.QuotedField(measure): avatar.Predicate(measure)(fact)
                       for measure in request['measures'] })
 
     fact_table = avatar.Predicate(self.config['fact_tables'][0]['fact_table'])
@@ -345,7 +360,8 @@ class Olap:
       program.AddRule(dimensions_domain_rule
                       )
     def ColumnName(predicate_call_str):
-      return '`%s`' % predicate_call_str.replace('(', '<').replace(')', '>').replace('"', "'").replace('"', "'")
+      return self.QuotedField(
+        predicate_call_str.replace('(', '<').replace(')', '>').replace('"', "'").replace('"', "'"))
     # Assembling all the measures together.
     measures_args = {ColumnName(m): avatar.Variable(self.ColumnName(m))
                      for m in self.measures}

@@ -22,6 +22,10 @@ import olap
 import ai
 import server
 
+from logica.common import logica_lib
+from logica.type_inference.research import infer
+from logica.parser_py import parse
+
 
 def Understand(config, user_request):
   mind = ai.AI.Get()
@@ -35,11 +39,53 @@ def Understand(config, user_request):
   return json_obj
 
 
+def JsonConfigFromLogicLMPredicate(config_filename):
+  def RunPredicate(predicate):
+    return logica_lib.RunPredicateToPandas(config_filename, predicate)
+  config = RunPredicate('LogicLM').iloc[0].to_dict()
+  engine = RunPredicate('@Engine')['col0'][0]
+  rules = parse.ParseFile(open(config_filename).read())['rule']
+  types = infer.TypesInferenceEngine(rules, 'duckdb')
+  types.InferTypes()
+  config['fact_tables'] = [{'fact_table': f} for f in config['fact_tables']]
+  def Params(p):
+    if p not in types.predicate_signature:
+      assert False, 'Unknown predicate %s, known: %s' % (
+          p, '\n'.join(types.predicate_signature.keys()))
+    return [{'field_name': f}
+            for f in types.predicate_signature[p].keys()
+            if not isinstance(f, int) and f != 'logica_value']
+  def BuildCalls(role, field):
+    return [{role: {'predicate_name': p,
+                    'parameters': Params(p)}}
+            for p in config[field]]
+
+  config['dimensions'] = BuildCalls('function', 'dimensions')
+  config['measures'] = BuildCalls('aggregating_function', 'measures')
+  config['filters'] = BuildCalls('predicate', 'filters')
+  chart_types = [
+      "PieChart", "LineChart", "BarChart", "StackedBarChart", "Table",
+      "TotalsCard", "VennDiagram", "GeoMap", "QueryOnly"
+  ]
+  chart_data = [{"predicate": {"predicate_name": chart, "parameters": []}}
+                for chart in chart_types]
+  config['suffix_lines'] = list(config['suffix_lines'])
+  config['chart_types'] = chart_data
+  config['logica_program'] = config_filename
+  if 'dashboard' not in config:
+    config['dashboard'] = []
+  config['dialect'] = engine
+  return config
+
+
 def main(argv):
   config_filename = argv[1]
   command = argv[2]
-  with open(config_filename) as f:
-    config = json.loads(f.read())
+  if config_filename[-4:] == 'json':
+    with open(config_filename) as f:
+      config = json.loads(f.read())
+  else:
+    config = JsonConfigFromLogicLMPredicate(config_filename)
 
   if command == 'understand':
     user_request = argv[3]
@@ -63,7 +109,11 @@ def main(argv):
     user_request = argv[3]
     request = Understand(config, user_request)
     analyzer = olap.Olap(config, request)
-    print(analyzer.GetSQL())
+    try:
+      print(analyzer.GetSQL())
+    except parse.ParsingException as parsing_exception:
+      parsing_exception.ShowMessage()
+      sys.exit(1)
   elif command == 'start_server':
     server.StartServer(config)
   elif command == 'remove_dashboard_from_config':

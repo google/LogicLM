@@ -132,6 +132,8 @@ class LogicLMServerHeart:
       # TODO: We should add NumRecords by default or
       # allow requests without measures.
       json_request['measures'] = ['NumRecords()']
+    if len(json_request['dimensions']) == 0:
+      json_request['dimensions'] = ['Total()']
     if len(json_request['dimensions']) < 1 or len(json_request['measures']) < 1:
       json_request['nice_error'] = '<i>Please specify at least one measure and at least one dimension.</i>'
       return 'Fail(true)', "select 'fail'", []
