@@ -6,15 +6,20 @@
 Please write configuration for an OLAP request.
 Available measures are:
 * MissionCount()
+* NumRecords()
 
 Available dimensions are:
 * MissionName()
 * PilotName()
 * OriginPlanetName()
 * DestinationPlanetName()
+* StarshipName()
+* MissionId()
 
 Available filters are:
 * MissionIsToPlanets(planet_names:)
+* MissionIsToStars(star_names:)
+* MissonIsByPilots(pilot_names:)
 
 Available charts are:
 * PieChart()
@@ -31,6 +36,7 @@ Always use all the fields. For example if you do not have filters, then pass it 
 
 Use Table() chart type by default.
 Do not forget to use parameter names, e.g. MissionIsToPlanets(planet_names: ['Mars'])
+If you need to order then give order just after space, like order: [StarhipName() asc].
 Good luck!
 
 Write me JSON for this request: __USER_REQUEST__

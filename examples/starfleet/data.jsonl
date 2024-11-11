@@ -86,3 +86,13 @@
 {"table_name": "University", "university_id": 8, "name": "Andromeda Engineering University", "planet_id": 105}
 {"table_name": "University", "university_id": 9, "name": "Cosmos Study Center", "planet_id": 109}
 {"table_name": "University", "university_id": 10, "name": "Celestial Biotech University", "planet_id": 110}
+
+{"table_name": "Planet", "planet_id": 128, "name": "Proxima Halo", "star_id": 4}
+{"table_name": "Planet", "planet_id": 129, "name": "Proxima Oasis", "star_id": 4}
+{"table_name": "Planet", "planet_id": 130, "name": "Proxima Mirage", "star_id": 4}
+{"table_name": "Mission", "mission_id": 31, "name": "Halo Pathfinder", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2114, "solar_year_landing": 2117, "starship_id": 1}
+{"table_name": "Mission", "mission_id": 32, "name": "Halo Voyager", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2115, "solar_year_landing": 2118, "starship_id": 2}
+{"table_name": "Mission", "mission_id": 33, "name": "Oasis Seeker", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2116, "solar_year_landing": 2119, "starship_id": 3}
+{"table_name": "Mission", "mission_id": 34, "name": "Oasis Explorer", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2117, "solar_year_landing": 2120, "starship_id": 4}
+{"table_name": "Mission", "mission_id": 35, "name": "Mirage Discovery", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2118, "solar_year_landing": 2121, "starship_id": 5}
+{"table_name": "Mission", "mission_id": 36, "name": "Mirage Expedition", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2119, "solar_year_landing": 2122, "starship_id": 6}
