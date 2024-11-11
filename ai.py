@@ -160,6 +160,8 @@ def GetPromptTemplate(config):
                                       params_str(d['predicate'].get('parameters', [])),
                                       MaybeDescription(d))
                       for d in config['filters'])
+  result_lines.append('')
+  result_lines.append('Available charts are:')
   result_lines.extend('* %s(%s)%s' % (c['predicate']['predicate_name'],
                                       params_str(c['predicate'].get('parameters', [])),
                                       MaybeDescription(c))

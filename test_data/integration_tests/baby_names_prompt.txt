@@ -19,6 +19,8 @@ Available filters are:
 * NameIn(names:)
 * YearIn(years:)
 * YearRange(from_year:, to_year:)
+
+Available charts are:
 * PieChart()
 * LineChart()
 * BarChart()

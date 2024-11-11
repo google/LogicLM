@@ -28,6 +28,8 @@ Available filters are:
 * GenderIn(genders:)
 * CampaignIn(campaigns:)
 * DateRange(date_from:, date_to:): Dates are in YYYY-MM-DD format.
+
+Available charts are:
 * PieChart()
 * LineChart()
 * BarChart()
