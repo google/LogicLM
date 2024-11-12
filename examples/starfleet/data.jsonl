@@ -1,33 +1,49 @@
-{"table_name": "Mission", "mission_id": 1, "name": "Lunar Sprint", "destination_planet": 101, "origin_planet": 101, "solar_year_launch": 2081, "solar_year_landing": 2084, "starship_id": 1}
-{"table_name": "Mission", "mission_id": 2, "name": "Endeavor Quest", "destination_planet": 102, "origin_planet": 101, "solar_year_launch": 2082, "solar_year_landing": 2085, "starship_id": 2}
-{"table_name": "Mission", "mission_id": 3, "name": "Voyager Beyond", "destination_planet": 103, "origin_planet": 101, "solar_year_launch": 2083, "solar_year_landing": 2086, "starship_id": 3}
-{"table_name": "Mission", "mission_id": 4, "name": "Starburst Expedition", "destination_planet": 104, "origin_planet": 101, "solar_year_launch": 2084, "solar_year_landing": 2087, "starship_id": 4}
-{"table_name": "Mission", "mission_id": 5, "name": "Horizon Voyage", "destination_planet": 105, "origin_planet": 101, "solar_year_launch": 2085, "solar_year_landing": 2088, "starship_id": 5}
-{"table_name": "Mission", "mission_id": 6, "name": "Comet Tail", "destination_planet": 106, "origin_planet": 101, "solar_year_launch": 2086, "solar_year_landing": 2089, "starship_id": 6}
-{"table_name": "Mission", "mission_id": 7, "name": "Galactic Pioneer", "destination_planet": 107, "origin_planet": 101, "solar_year_launch": 2087, "solar_year_landing": 2090, "starship_id": 7}
-{"table_name": "Mission", "mission_id": 8, "name": "Starlight Journey", "destination_planet": 108, "origin_planet": 101, "solar_year_launch": 2088, "solar_year_landing": 2091, "starship_id": 8}
-{"table_name": "Mission", "mission_id": 9, "name": "Gravity Break", "destination_planet": 109, "origin_planet": 101, "solar_year_launch": 2089, "solar_year_landing": 2092, "starship_id": 9}
-{"table_name": "Mission", "mission_id": 10, "name": "Meteor Chase", "destination_planet": 110, "origin_planet": 101, "solar_year_launch": 2090, "solar_year_landing": 2093, "starship_id": 10}
-{"table_name": "Mission", "mission_id": 11, "name": "Black Hole Pursuit", "destination_planet": 111, "origin_planet": 101, "solar_year_launch": 2091, "solar_year_landing": 2094, "starship_id": 1}
-{"table_name": "Mission", "mission_id": 12, "name": "Odyssey Dawn", "destination_planet": 112, "origin_planet": 101, "solar_year_launch": 2092, "solar_year_landing": 2095, "starship_id": 2}
-{"table_name": "Mission", "mission_id": 13, "name": "Astro Odyssey", "destination_planet": 113, "origin_planet": 101, "solar_year_launch": 2093, "solar_year_landing": 2096, "starship_id": 3}
-{"table_name": "Mission", "mission_id": 14, "name": "Pulsar Pathway", "destination_planet": 114, "origin_planet": 101, "solar_year_launch": 2094, "solar_year_landing": 2097, "starship_id": 4}
-{"table_name": "Mission", "mission_id": 15, "name": "Infinity Seeker", "destination_planet": 115, "origin_planet": 101, "solar_year_launch": 2095, "solar_year_landing": 2098, "starship_id": 5}
-{"table_name": "Mission", "mission_id": 16, "name": "Galaxy Quest", "destination_planet": 116, "origin_planet": 101, "solar_year_launch": 2096, "solar_year_landing": 2099, "starship_id": 6}
-{"table_name": "Mission", "mission_id": 17, "name": "Supernova Voyage", "destination_planet": 117, "origin_planet": 101, "solar_year_launch": 2097, "solar_year_landing": 2100, "starship_id": 7}
-{"table_name": "Mission", "mission_id": 18, "name": "Phoenix Ascent", "destination_planet": 118, "origin_planet": 101, "solar_year_launch": 2098, "solar_year_landing": 2101, "starship_id": 8}
-{"table_name": "Mission", "mission_id": 19, "name": "Stellar Drift", "destination_planet": 119, "origin_planet": 101, "solar_year_launch": 2099, "solar_year_landing": 2102, "starship_id": 9}
-{"table_name": "Mission", "mission_id": 20, "name": "Quantum Leap", "destination_planet": 120, "origin_planet": 101, "solar_year_launch": 2100, "solar_year_landing": 2103, "starship_id": 10}
-{"table_name": "Mission", "mission_id": 21, "name": "Nebula Discovery", "destination_planet": 121, "origin_planet": 101, "solar_year_launch": 2101, "solar_year_landing": 2104, "starship_id": 1}
-{"table_name": "Mission", "mission_id": 22, "name": "Celestial Navigator", "destination_planet": 122, "origin_planet": 101, "solar_year_launch": 2102, "solar_year_landing": 2105, "starship_id": 2}
-{"table_name": "Mission", "mission_id": 23, "name": "Event Horizon", "destination_planet": 123, "origin_planet": 101, "solar_year_launch": 2103, "solar_year_landing": 2106, "starship_id": 3}
-{"table_name": "Mission", "mission_id": 24, "name": "Void Wanderer", "destination_planet": 124, "origin_planet": 101, "solar_year_launch": 2104, "solar_year_landing": 2107, "starship_id": 4}
-{"table_name": "Mission", "mission_id": 25, "name": "Aurora Trail", "destination_planet": 125, "origin_planet": 101, "solar_year_launch": 2105, "solar_year_landing": 2108, "starship_id": 5}
-{"table_name": "Mission", "mission_id": 26, "name": "Nebula Discovery", "destination_planet": 126, "origin_planet": 101, "solar_year_launch": 2106, "solar_year_landing": 2109, "starship_id": 6}
-{"table_name": "Mission", "mission_id": 27, "name": "Eclipse Path", "destination_planet": 127, "origin_planet": 101, "solar_year_launch": 2107, "solar_year_landing": 2110, "starship_id": 7}
-{"table_name": "Mission", "mission_id": 28, "name": "Orion Trek", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2108, "solar_year_landing": 2111, "starship_id": 8}
-{"table_name": "Mission", "mission_id": 29, "name": "Gravity Break", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2109, "solar_year_landing": 2112, "starship_id": 9}
-{"table_name": "Mission", "mission_id": 30, "name": "Cosmic Crusade", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2110, "solar_year_landing": 2113, "starship_id": 10}
+{"table_name": "Mission", "mission_id": 1, "name": "Lunar Sprint", "destination_planet": 101, "origin_planet": 101, "solar_year_launch": 2081, "solar_year_landing": 2084, "starship_id": 1, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 2, "name": "Endeavor Quest", "destination_planet": 102, "origin_planet": 101, "solar_year_launch": 2082, "solar_year_landing": 2085, "starship_id": 2, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 3, "name": "Voyager Beyond", "destination_planet": 103, "origin_planet": 101, "solar_year_launch": 2083, "solar_year_landing": 2086, "starship_id": 3, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 4, "name": "Starburst Expedition", "destination_planet": 104, "origin_planet": 101, "solar_year_launch": 2084, "solar_year_landing": 2087, "starship_id": 4, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 5, "name": "Horizon Voyage", "destination_planet": 105, "origin_planet": 101, "solar_year_launch": 2085, "solar_year_landing": 2088, "starship_id": 5, "matter_annihilated": 8}
+{"table_name": "Mission", "mission_id": 6, "name": "Comet Tail", "destination_planet": 106, "origin_planet": 101, "solar_year_launch": 2086, "solar_year_landing": 2089, "starship_id": 6, "matter_annihilated": 7}
+{"table_name": "Mission", "mission_id": 7, "name": "Galactic Pioneer", "destination_planet": 107, "origin_planet": 101, "solar_year_launch": 2087, "solar_year_landing": 2090, "starship_id": 7, "matter_annihilated": 19}
+{"table_name": "Mission", "mission_id": 8, "name": "Starlight Journey", "destination_planet": 108, "origin_planet": 101, "solar_year_launch": 2088, "solar_year_landing": 2091, "starship_id": 8, "matter_annihilated": 11}
+{"table_name": "Mission", "mission_id": 9, "name": "Gravity Break", "destination_planet": 109, "origin_planet": 101, "solar_year_launch": 2089, "solar_year_landing": 2092, "starship_id": 9, "matter_annihilated": 11}
+{"table_name": "Mission", "mission_id": 10, "name": "Meteor Chase", "destination_planet": 110, "origin_planet": 101, "solar_year_launch": 2090, "solar_year_landing": 2093, "starship_id": 10, "matter_annihilated": 4}
+{"table_name": "Mission", "mission_id": 11, "name": "Black Hole Pursuit", "destination_planet": 111, "origin_planet": 101, "solar_year_launch": 2091, "solar_year_landing": 2094, "starship_id": 1, "matter_annihilated": 8}
+{"table_name": "Mission", "mission_id": 12, "name": "Odyssey Dawn", "destination_planet": 112, "origin_planet": 101, "solar_year_launch": 2092, "solar_year_landing": 2095, "starship_id": 2, "matter_annihilated": 3}
+{"table_name": "Mission", "mission_id": 13, "name": "Astro Odyssey", "destination_planet": 113, "origin_planet": 101, "solar_year_launch": 2093, "solar_year_landing": 2096, "starship_id": 3, "matter_annihilated": 2}
+{"table_name": "Mission", "mission_id": 14, "name": "Pulsar Pathway", "destination_planet": 114, "origin_planet": 101, "solar_year_launch": 2094, "solar_year_landing": 2097, "starship_id": 4, "matter_annihilated": 12}
+{"table_name": "Mission", "mission_id": 15, "name": "Infinity Seeker", "destination_planet": 115, "origin_planet": 101, "solar_year_launch": 2095, "solar_year_landing": 2098, "starship_id": 5, "matter_annihilated": 6}
+{"table_name": "Mission", "mission_id": 16, "name": "Galaxy Quest", "destination_planet": 116, "origin_planet": 101, "solar_year_launch": 2096, "solar_year_landing": 2099, "starship_id": 6, "matter_annihilated": 2}
+{"table_name": "Mission", "mission_id": 17, "name": "Supernova Voyage", "destination_planet": 117, "origin_planet": 101, "solar_year_launch": 2097, "solar_year_landing": 2100, "starship_id": 7, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 18, "name": "Phoenix Ascent", "destination_planet": 118, "origin_planet": 101, "solar_year_launch": 2098, "solar_year_landing": 2101, "starship_id": 8, "matter_annihilated": 12}
+{"table_name": "Mission", "mission_id": 19, "name": "Stellar Drift", "destination_planet": 119, "origin_planet": 101, "solar_year_launch": 2099, "solar_year_landing": 2102, "starship_id": 9, "matter_annihilated": 12}
+{"table_name": "Mission", "mission_id": 20, "name": "Quantum Leap", "destination_planet": 120, "origin_planet": 101, "solar_year_launch": 2100, "solar_year_landing": 2103, "starship_id": 10, "matter_annihilated": 17}
+{"table_name": "Mission", "mission_id": 21, "name": "Nebula Discovery", "destination_planet": 121, "origin_planet": 101, "solar_year_launch": 2101, "solar_year_landing": 2104, "starship_id": 1, "matter_annihilated": 10}
+{"table_name": "Mission", "mission_id": 22, "name": "Celestial Navigator", "destination_planet": 122, "origin_planet": 101, "solar_year_launch": 2102, "solar_year_landing": 2105, "starship_id": 2, "matter_annihilated": 16}
+{"table_name": "Mission", "mission_id": 23, "name": "Event Horizon", "destination_planet": 123, "origin_planet": 101, "solar_year_launch": 2103, "solar_year_landing": 2106, "starship_id": 3, "matter_annihilated": 15}
+{"table_name": "Mission", "mission_id": 24, "name": "Void Wanderer", "destination_planet": 124, "origin_planet": 101, "solar_year_launch": 2103, "solar_year_landing": 2107, "starship_id": 4, "matter_annihilated": 15}
+{"table_name": "Mission", "mission_id": 25, "name": "Aurora Trail", "destination_planet": 125, "origin_planet": 101, "solar_year_launch": 2103, "solar_year_landing": 2108, "starship_id": 5, "matter_annihilated": 19}
+{"table_name": "Mission", "mission_id": 26, "name": "Nebula Discovery", "destination_planet": 126, "origin_planet": 101, "solar_year_launch": 2106, "solar_year_landing": 2109, "starship_id": 6, "matter_annihilated": 12}
+{"table_name": "Mission", "mission_id": 27, "name": "Eclipse Path", "destination_planet": 127, "origin_planet": 101, "solar_year_launch": 2107, "solar_year_landing": 2110, "starship_id": 7, "matter_annihilated": 20}
+{"table_name": "Mission", "mission_id": 28, "name": "Orion Trek", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2108, "solar_year_landing": 2111, "starship_id": 8, "matter_annihilated": 3}
+{"table_name": "Mission", "mission_id": 29, "name": "Gravity Break", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2109, "solar_year_landing": 2112, "starship_id": 9, "matter_annihilated": 5}
+{"table_name": "Mission", "mission_id": 30, "name": "Cosmic Crusade", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2110, "solar_year_landing": 2113, "starship_id": 10, "matter_annihilated": 19}
+{"table_name": "Mission", "mission_id": 31, "name": "Red Sand Odyssey", "destination_planet": 102, "origin_planet": 101, "solar_year_launch": 2030, "solar_year_landing": 2033, "starship_id": 1, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 32, "name": "Martian Specter Voyage", "destination_planet": 102, "origin_planet": 101, "solar_year_launch": 2031, "solar_year_landing": 2034, "starship_id": 2, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 33, "name": "Dust Trail Discovery", "destination_planet": 102, "origin_planet": 101, "solar_year_launch": 2032, "solar_year_landing": 2035, "starship_id": 3, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 34, "name": "Crimson Planet Expedition", "destination_planet": 102, "origin_planet": 101, "solar_year_launch": 2033, "solar_year_landing": 2036, "starship_id": 4, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 35, "name": "Martian Mirage Quest", "destination_planet": 102, "origin_planet": 101, "solar_year_launch": 2034, "solar_year_landing": 2037, "starship_id": 5, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 36, "name": "Proxima Frontier", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2035, "solar_year_landing": 2038, "starship_id": 6, "matter_annihilated": 14}
+{"table_name": "Mission", "mission_id": 37, "name": "Oasis Voyager", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2036, "solar_year_landing": 2039, "starship_id": 7, "matter_annihilated": 16}
+{"table_name": "Mission", "mission_id": 38, "name": "Europa Ice Explorer", "destination_planet": 103, "origin_planet": 102, "solar_year_launch": 2040, "solar_year_landing": 2043, "starship_id": 8, "matter_annihilated": 2}
+{"table_name": "Mission", "mission_id": 39, "name": "Europa Deep Dive", "destination_planet": 103, "origin_planet": 102, "solar_year_launch": 2044, "solar_year_landing": 2047, "starship_id": 8, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 40, "name": "Europa Legacy Mission", "destination_planet": 103, "origin_planet": 102, "solar_year_launch": 2048, "solar_year_landing": 2051, "starship_id": 8, "matter_annihilated": 1}
+{"table_name": "Mission", "mission_id": 31, "name": "Halo Pathfinder", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2114, "solar_year_landing": 2117, "starship_id": 1, "matter_annihilated": 5}
+{"table_name": "Mission", "mission_id": 32, "name": "Halo Voyager", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2115, "solar_year_landing": 2118, "starship_id": 2, "matter_annihilated": 6}
+{"table_name": "Mission", "mission_id": 33, "name": "Oasis Seeker", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2116, "solar_year_landing": 2119, "starship_id": 3, "matter_annihilated": 7}
+{"table_name": "Mission", "mission_id": 34, "name": "Oasis Explorer", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2117, "solar_year_landing": 2120, "starship_id": 4, "matter_annihilated": 8}
+{"table_name": "Mission", "mission_id": 35, "name": "Mirage Discovery", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2118, "solar_year_landing": 2121, "starship_id": 5, "matter_annihilated": 9}
+{"table_name": "Mission", "mission_id": 36, "name": "Mirage Expedition", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2119, "solar_year_landing": 2122, "starship_id": 6, "matter_annihilated": 10}
 
 {"table_name": "Starship", "starship_id": 1, "name": "Explorer I", "pilot_id": 1}
 {"table_name": "Starship", "starship_id": 2, "name": "Odyssey", "pilot_id": 2}
@@ -65,16 +81,16 @@
 {"table_name": "Star", "star_id": 9, "star_name": "Kapteyn's Star"}
 {"table_name": "Star", "star_id": 10, "star_name": "LHS 1140"}
 
-{"table_name": "Person", "person_id": 1, "name": "Captain Alice", "alma_mater": "Interstellar Academy"}
-{"table_name": "Person", "person_id": 2, "name": "Commander Blake", "alma_mater": "Galactic Institute"}
-{"table_name": "Person", "person_id": 3, "name": "Pilot Charley", "alma_mater": "Mars University"}
-{"table_name": "Person", "person_id": 4, "name": "Navigator Dana", "alma_mater": "Europa Space College"}
-{"table_name": "Person", "person_id": 5, "name": "Engineer Evan", "alma_mater": "Lunar Science Academy"}
-{"table_name": "Person", "person_id": 6, "name": "Astronaut Frank", "alma_mater": "Stellar Research Center"}
-{"table_name": "Person", "person_id": 7, "name": "Specialist Grace", "alma_mater": "Proxima Exploration Institute"}
-{"table_name": "Person", "person_id": 8, "name": "Technician Hank", "alma_mater": "Andromeda Engineering University"}
-{"table_name": "Person", "person_id": 9, "name": "Astrophysicist Ivy", "alma_mater": "Cosmos Study Center"}
-{"table_name": "Person", "person_id": 10, "name": "Biologist Jack", "alma_mater": "Celestial Biotech University"}
+{"table_name": "Person", "person_id": 1, "name": "Captain Alice", "alma_mater": 1}
+{"table_name": "Person", "person_id": 2, "name": "Commander Blake", "alma_mater": 2}
+{"table_name": "Person", "person_id": 3, "name": "Pilot Charley", "alma_mater": 3}
+{"table_name": "Person", "person_id": 4, "name": "Navigator Dana", "alma_mater": 4}
+{"table_name": "Person", "person_id": 5, "name": "Engineer Enzo", "alma_mater": 10}
+{"table_name": "Person", "person_id": 6, "name": "Astronaut Frank", "alma_mater": 6}
+{"table_name": "Person", "person_id": 7, "name": "Specialist Grace", "alma_mater": 7}
+{"table_name": "Person", "person_id": 8, "name": "Technician Hank", "alma_mater": 8}
+{"table_name": "Person", "person_id": 9, "name": "Astrophysicist Ivy", "alma_mater": 9}
+{"table_name": "Person", "person_id": 10, "name": "Biologist Giacomo", "alma_mater": 10}
 
 {"table_name": "University", "university_id": 1, "name": "Interstellar Academy", "planet_id": 101}
 {"table_name": "University", "university_id": 2, "name": "Galactic Institute", "planet_id": 102}
@@ -82,17 +98,11 @@
 {"table_name": "University", "university_id": 4, "name": "Europa Space College", "planet_id": 103}
 {"table_name": "University", "university_id": 5, "name": "Lunar Science Academy", "planet_id": 101}
 {"table_name": "University", "university_id": 6, "name": "Stellar Research Center", "planet_id": 104}
-{"table_name": "University", "university_id": 7, "name": "Proxima Exploration Institute", "planet_id": 107}
+{"table_name": "University", "university_id": 7, "name": "Quantum State University", "planet_id": 101}
 {"table_name": "University", "university_id": 8, "name": "Andromeda Engineering University", "planet_id": 105}
 {"table_name": "University", "university_id": 9, "name": "Cosmos Study Center", "planet_id": 109}
-{"table_name": "University", "university_id": 10, "name": "Celestial Biotech University", "planet_id": 110}
+{"table_name": "University", "university_id": 10, "name": "University of Calabria", "planet_id": 101}
 
 {"table_name": "Planet", "planet_id": 128, "name": "Proxima Halo", "star_id": 4}
 {"table_name": "Planet", "planet_id": 129, "name": "Proxima Oasis", "star_id": 4}
 {"table_name": "Planet", "planet_id": 130, "name": "Proxima Mirage", "star_id": 4}
-{"table_name": "Mission", "mission_id": 31, "name": "Halo Pathfinder", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2114, "solar_year_landing": 2117, "starship_id": 1}
-{"table_name": "Mission", "mission_id": 32, "name": "Halo Voyager", "destination_planet": 128, "origin_planet": 101, "solar_year_launch": 2115, "solar_year_landing": 2118, "starship_id": 2}
-{"table_name": "Mission", "mission_id": 33, "name": "Oasis Seeker", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2116, "solar_year_landing": 2119, "starship_id": 3}
-{"table_name": "Mission", "mission_id": 34, "name": "Oasis Explorer", "destination_planet": 129, "origin_planet": 101, "solar_year_launch": 2117, "solar_year_landing": 2120, "starship_id": 4}
-{"table_name": "Mission", "mission_id": 35, "name": "Mirage Discovery", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2118, "solar_year_landing": 2121, "starship_id": 5}
-{"table_name": "Mission", "mission_id": 36, "name": "Mirage Expedition", "destination_planet": 130, "origin_planet": 101, "solar_year_launch": 2119, "solar_year_landing": 2122, "starship_id": 6}
