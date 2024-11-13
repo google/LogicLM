@@ -26,10 +26,11 @@ LogicLM(name: "Space exploration",
         dimensions: ["MissionName", "PilotName", "OriginPlanetName",
                      "DestinationPlanetName", "StarshipName", "MissionId",
                      "DestinationStarSystem", "LaunchYear", "LaunchDecade",
-                     "PilotAlmaMater"],
-        measures: ["MissionCount", "NumRecords", "MatterAnnihilated", "ShipCount"],
+                     "PilotAlmaMater", "FlightYear"],
+        measures: ["MissionCount", "NumRecords", "MatterAnnihilated", "ShipCount",
+                   "FlightDuration"],
         filters: ["MissionIsToPlanets", "MissionIsToStars", "MissonIsByPilots",
-                  "PilotIsFromUniversities"],
+                  "PilotIsFromUniversities", "LaunchAfter"],
         suffix_lines: [
             "Use Table() chart type by default.",
             "Do not forget to use parameter names, e.g. MissionIsToPlanets(planet_names: ['Mars'])",
@@ -107,6 +108,8 @@ PilotAlmaMater(fact) = name :-
   Person(person_id:,
          alma_mater:),
   University(university_id: alma_mater, name:);
+FlightYear(fact) = fact.solar_year_launch + i :-
+  i in Range(fact.solar_year_landing - fact.solar_year_launch + 1);
 
 Total(fact) = "total";
 
@@ -115,6 +118,7 @@ MissionCount(fact) = Count(fact.mission_id);
 NumRecords(fact) = Sum(1);
 MatterAnnihilated(fact) = Sum(fact.matter_annihilated);
 ShipCount(fact) = Count(fact.starship_id);
+FlightDuration(fact) = Sum(fact.solar_year_landing - fact.solar_year_launch);
 
 # Filters.
 MissionIsToPlanets(fact, planet_names:) :-
@@ -132,3 +136,6 @@ MissonIsByPilots(fact, pilot_names:) :-
 
 PilotIsFromUniversities(fact, university_names:) :-
   Constraint(PilotAlmaMater(fact) in university_names);
+
+LaunchAfter(fact, year:) :-
+  fact.solar_year_launch > year;
