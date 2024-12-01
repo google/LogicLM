@@ -26,7 +26,7 @@ LogicLM(name: "Space exploration",
         dimensions: ["MissionName", "PilotName", "OriginPlanetName",
                      "DestinationPlanetName", "StarshipName", "MissionId",
                      "DestinationStarSystem", "LaunchYear", "LaunchDecade",
-                     "PilotAlmaMater", "FlightYear"],
+                     "PilotAlmaMater", "FlightYear", "PilotAlmaMaterPlanet"],
         measures: ["MissionCount", "NumRecords", "MatterAnnihilated", "ShipCount",
                    "FlightDuration"],
         filters: ["MissionIsToPlanets", "MissionIsToStars", "MissonIsByPilots",
@@ -110,6 +110,12 @@ PilotAlmaMater(fact) = name :-
   University(university_id: alma_mater, name:);
 FlightYear(fact) = fact.solar_year_launch + i :-
   i in Range(fact.solar_year_landing - fact.solar_year_launch + 1);
+
+PilotAlmaMaterPlanet(fact) = planet_name :-
+  Starship(starship_id: fact.starship_id, pilot_id: person_id),
+  Person(person_id:, alma_mater:),
+  University(university_id: alma_mater, planet_id:),
+  Planet(planet_id:, name: planet_name);
 
 Total(fact) = "total";
 
