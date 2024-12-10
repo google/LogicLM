@@ -7,6 +7,9 @@ Please write configuration for an OLAP request.
 Available measures are:
 * MissionCount()
 * NumRecords()
+* MatterAnnihilated()
+* ShipCount()
+* FlightDuration()
 
 Available dimensions are:
 * MissionName()
@@ -15,11 +18,19 @@ Available dimensions are:
 * DestinationPlanetName()
 * StarshipName()
 * MissionId()
+* DestinationStarSystem()
+* LaunchYear()
+* LaunchDecade()
+* PilotAlmaMater()
+* FlightYear()
+* PilotAlmaMaterPlanet()
 
 Available filters are:
 * MissionIsToPlanets(planet_names:)
 * MissionIsToStars(star_names:)
 * MissonIsByPilots(pilot_names:)
+* PilotIsFromUniversities(university_names:)
+* LaunchAfter(year:)
 
 Available charts are:
 * PieChart()
@@ -37,6 +48,9 @@ Always use all the fields. For example if you do not have filters, then pass it 
 Use Table() chart type by default.
 Do not forget to use parameter names, e.g. MissionIsToPlanets(planet_names: ['Mars'])
 If you need to order then give order just after space, like order: [StarhipName() asc].
+Measures, filters and dimesions should all be lists of predicate calls, like DestinationStarSystem().
+Do not filter unless asked to.
+Use -1 for no limit.
 Good luck!
 
 Write me JSON for this request: __USER_REQUEST__

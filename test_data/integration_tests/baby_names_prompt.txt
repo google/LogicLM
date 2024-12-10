@@ -7,6 +7,7 @@ Please write configuration for an OLAP request.
 Available measures are:
 * NumberOfBabies()
 * NameFraction(name:)
+* NameFractionPromille(name:)
 
 Available dimensions are:
 * Name()
@@ -43,8 +44,8 @@ Example response: {"title": "Top 3 Popular Baby Names in Washington.", "measures
 Example request: Number of babies by state as a map.
 Example response: {"title": "Number of babies by state.", "measures": ["NumberOfBabies()"], "dimensions": ["State()"], "filters": [], "chartType": "GeoMap(region: \"US\", resolution: \"provinces\")", "order": ["NumberOfBabies() desc"], "limit": -1}
 
-Example request: Fraction of Arnolds by state.
-Example response: {"title": "Fraction of Arnolds by state.", "measures": ["NameFraction(name: \"Arnold\")"], "dimensions": ["State()"], "filters": [], "chartType": "BarChart()", "order": ["State()"], "limit": -1}
+Example request: Popularity of Arnolds by state.
+Example response: {"title": "Fraction of Arnolds by state.", "measures": ["NameFractionPromille(name: \"Arnold\")"], "dimensions": ["State()"], "filters": [], "chartType": "BarChart()", "order": ["State()"], "limit": -1}
 
 Example request: Cumulative number of babies for 1990 to 2000.
 Example response: { "title": "Cumulative number of babies for 1990 to 2000.", "measures": ["NumberOfBabies()"], "dimensions": ["CumulativeYear(to_year: 2000)"], "filters": ["YearRange(from_year: 1990, to_year: 2000)"], "chartType": "LineChart()", "order": ["CumulativeYear(to_year: 2000)"], "limit": -1}

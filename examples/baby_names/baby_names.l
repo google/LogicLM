@@ -20,6 +20,8 @@ NameFraction(fact, name:) = Sum(is_this_name) / Sum(1.0) :-
   is_this_name = (
     if fact.name == name then 1 else 0
   );
+# Rarely name is more than 1 in 1000, so promille is a good scale.
+NameFractionPromille(fact, name:) = 1000 * NameFraction(fact, name:);
 
 State(fact) = fact.state;
 Name(fact) = fact.name;
