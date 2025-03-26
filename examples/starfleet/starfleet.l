@@ -30,7 +30,7 @@ LogicLM(name: "Space exploration",
         measures: ["MissionCount", "NumRecords", "MatterAnnihilated", "ShipCount",
                    "FlightDuration"],
         filters: ["MissionIsToPlanets", "MissionIsToStars", "MissonIsByPilots",
-                  "PilotIsFromUniversities", "LaunchAfter"],
+                  "PilotIsFromUniversities", "LaunchAfter", "StarshipNames"],
         suffix_lines: [
             "Use Table() chart type by default.",
             "Do not forget to use parameter names, e.g. MissionIsToPlanets(planet_names: ['Mars'])",
@@ -142,6 +142,9 @@ MissonIsByPilots(fact, pilot_names:) :-
 
 PilotIsFromUniversities(fact, university_names:) :-
   Constraint(PilotAlmaMater(fact) in university_names);
+
+StarshipNames(fact, ship_names:) :-
+  Constraint(StarshipName(fact) in ship_names);
 
 LaunchAfter(fact, year:) :-
   fact.solar_year_launch > year;

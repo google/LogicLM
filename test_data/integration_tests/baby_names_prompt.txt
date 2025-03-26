@@ -14,10 +14,12 @@ Available dimensions are:
 * State()
 * Year()
 * CumulativeYear(to_year:)
+* Gender()
 
 Available filters are:
 * StateIn(states:)
 * NameIn(names:)
+* GenderIs(gender:)
 * YearIn(years:)
 * YearRange(from_year:, to_year:)
 

@@ -29,6 +29,7 @@ Year(fact) = fact.year;
 CumulativeYear(fact, to_year:) = year + d :-
   year = fact.year,
   d in Range(to_year - year + 1);
+Gender(fact) = fact.gender;
 
 StateIn(fact, states:) :-
   Constraint(fact.state in states);
@@ -40,3 +41,14 @@ YearRange(fact, from_year:, to_year:) :-
   fact.year <= to_year;
 NameIn(fact, names:) :-
   Constraint(fact.name in names);
+GenderIs(fact, gender:) :-
+  g == (
+    if gender == "Male" then
+      "M"
+    else if gender == "Female" then
+      "F"
+    else
+      gender
+  ),
+  fact.gender == g;
+  

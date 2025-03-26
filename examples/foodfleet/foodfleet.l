@@ -31,6 +31,7 @@ LogicLM(name: "Food delivery",
         filters: ["OrdersToDistricts", "OrdersToCities", "OrdersByDrivers", "OrdersAfter"],
         suffix_lines: [
             "Try using linechart or barchart. If unsure use Table() chart.",
+            "Use your judgement to sort by dimensions, or descending by measure.",
             "Do not forget to use parameter names, e.g. OrdersToDistricts(district_names: ['Central Zone'])",
             "If you need to order then give order just after space, like order: [VehicleName() asc].",
             "Measures, filters and dimensions should all be lists of predicate calls, like CustomerCityName().",

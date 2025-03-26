@@ -58,6 +58,11 @@
           }
         ]
       }
+    },
+    {
+      "function": {
+        "predicate_name": "Gender"
+      }    
     }
   ],
   "filters": [
@@ -77,6 +82,16 @@
         "parameters": [
           {
             "field_name": "names"
+          }
+        ]
+      }
+    },
+    {
+      "predicate": {
+        "predicate_name": "GenderIs",
+        "parameters": [
+          {
+            "field_name": "gender"
           }
         ]
       }

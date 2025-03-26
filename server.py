@@ -19,6 +19,7 @@ import cgi
 import json
 from http import server
 import socketserver
+import traceback
 import time
 import os
 import tempfile
@@ -215,12 +216,23 @@ def MakeSimpleLogicLMServer(config):
         json_request = json.loads(
           self.rfile.read(int(self.headers['Content-Length'])).decode('utf-8'))
         print('JSON request:', json_request)
-        logic_program, sql, data = self.heart.RunJson(json_request)
-        response = json_request | {
-          'data': data,
-          'sql': sql,
-          'logical_program': logic_program,
-        }
+        try:
+          logic_program, sql, data = self.heart.RunJson(json_request)
+          response = json_request | {
+            'data': data,
+            'sql': sql,
+            'logical_program': logic_program,
+          }
+        except KeyError as e:
+          response = json_request | {
+            'nice_error': 'Silly LLM produced an unknown entity: ' + str(e)
+          }
+          print(traceback.format_exc())
+        except Exception as e:
+          response = json_request | {
+            'nice_error': 'Ouch, I have got an error:' + str(e)
+          }
+          print(traceback.format_exc())
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
@@ -265,7 +277,8 @@ def StartServer(config):
   simple_server = MakeSimpleLogicLMServer(config)
   port = config.get('port', 1791)
   server_instance = ThreadedTCPServer(('localhost', port), simple_server)
-  print('Starting LogicLM server for "%s" intelligence configuration.' % config['name'])
+  print('Starting LogicLM server for "%s" intelligence configuration at port %d.' % (
+    config['name'], port))
   try:
     server_instance.serve_forever()
   except KeyboardInterrupt:
